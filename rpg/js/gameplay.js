@@ -484,7 +484,7 @@ function enterTrainingGrounds() {
   enemies = [];
   spawnEnemies(0, 20, 6);
   // Extra rats — the grounds are infested
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 18; i++) {
     let ratType = enemyTypes['rat'];
     let pos = randomFloorTile(20, 6, 5);
     if (pos) enemies.push({ ...ratType, typeKey: 'rat', x: pos.x, y: pos.y, maxHp: ratType.hp, opacity: 1 });

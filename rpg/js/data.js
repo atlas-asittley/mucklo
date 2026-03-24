@@ -117,19 +117,19 @@ const enemyTypes = {
   dragon:        { name:'Dragon',         color:'#a22',    hp:1000,   atk:180, def:80,  xp:100, gold:[50,100],   drawKey:'dragon', isBoss:true, damageType:'fire' },
   // ── Training Grounds (beginner area, tiered by player level) ─────────────
   // Tier 1 (lvl 1-2): Rat, Rabbit, Bird, Squirrel
-  rat:       { name:'Rat',       color:'#7a6a55', hp:3,  atk:1,  def:0, xp:2,  gold:[1,1],   drawKey:'rat',      drops:['rat_tail'],          dropChance:0.2,  minLevel:1 },
-  rabbit:    { name:'Rabbit',    color:'#e0e0e0', hp:8,  atk:2,  def:0, xp:5,  gold:[2,3],   drawKey:'rabbit',   drops:['rabbit_fur_jacket'], dropChance:0.3,  minLevel:1 },
-  bird:      { name:'Bird',      color:'#3377bb', hp:15, atk:5,  def:1, xp:10, gold:[4,6],   drawKey:'bird',     drops:['feather'],           dropChance:0.35, minLevel:1 },
-  squirrel:  { name:'Squirrel',  color:'#7a3a10', hp:12, atk:4,  def:0, xp:7,  gold:[3,4],   drawKey:'squirrel', drops:['acorn'],             dropChance:0.4,  minLevel:1 },
+  rat:       { name:'Rat',       color:'#7a6a55', hp:60,  atk:8,  def:0, xp:15, gold:[1,2],   drawKey:'rat',      drops:['rat_tail'],          dropChance:0.2,  minLevel:1 },
+  rabbit:    { name:'Rabbit',    color:'#e0e0e0', hp:75,  atk:12, def:1, xp:25, gold:[2,4],   drawKey:'rabbit',   drops:['rabbit_fur_jacket'], dropChance:0.3,  minLevel:1 },
+  bird:      { name:'Bird',      color:'#3377bb', hp:80,  atk:15, def:2, xp:35, gold:[4,7],   drawKey:'bird',     drops:['feather'],           dropChance:0.35, minLevel:1 },
+  squirrel:  { name:'Squirrel',  color:'#7a3a10', hp:65,  atk:10, def:1, xp:20, gold:[3,5],   drawKey:'squirrel', drops:['acorn'],             dropChance:0.4,  minLevel:1 },
   // Tier 3 (lvl 3-4): Mole, Frog
-  mole:      { name:'Mole',      color:'#5c4033', hp:25, atk:8,  def:2, xp:15, gold:[6,8],   drawKey:'mole',     minLevel:3 },
-  frog:      { name:'Frog',      color:'#4caf50', hp:20, atk:10, def:1, xp:18, gold:[8,10],  drawKey:'frog',     minLevel:3 },
+  mole:      { name:'Mole',      color:'#5c4033', hp:100, atk:20, def:3, xp:45, gold:[7,10],  drawKey:'mole',     minLevel:3 },
+  frog:      { name:'Frog',      color:'#4caf50', hp:90,  atk:22, def:2, xp:50, gold:[9,12],  drawKey:'frog',     minLevel:3 },
   // Tier 4 (lvl 5-6): Badger, Snake
-  badger:    { name:'Badger',    color:'#78909c', hp:40, atk:12, def:4, xp:25, gold:[12,15], drawKey:'badger',   minLevel:5 },
-  snake:     { name:'Snake',     color:'#8bc34a', hp:30, atk:15, def:2, xp:22, gold:[10,12], drawKey:'snake',    minLevel:5 },
+  badger:    { name:'Badger',    color:'#78909c', hp:150, atk:28, def:6, xp:70, gold:[14,18], drawKey:'badger',   minLevel:5 },
+  snake:     { name:'Snake',     color:'#8bc34a', hp:120, atk:32, def:4, xp:65, gold:[12,15], drawKey:'snake',    minLevel:5 },
   // Tier 5 (lvl 7+): Wild Boar, Hawk
-  wild_boar: { name:'Wild Boar', color:'#8d6e63', hp:60, atk:18, def:6, xp:35, gold:[16,20], drawKey:'wild_boar', minLevel:7 },
-  hawk:      { name:'Hawk',      color:'#ff8f00', hp:45, atk:20, def:3, xp:30, gold:[15,18], drawKey:'hawk',     minLevel:7 },
+  wild_boar: { name:'Wild Boar', color:'#8d6e63', hp:200, atk:40, def:8, xp:90, gold:[18,24], drawKey:'wild_boar', minLevel:7 },
+  hawk:      { name:'Hawk',      color:'#ff8f00', hp:180, atk:45, def:5, xp:80, gold:[16,22], drawKey:'hawk',     minLevel:7 },
   // ── World map — Near road (1-3 tiles) — warmup ────────────────────────────
   wolf:          { name:'Wolf',           color:'#8b5e3c', hp:80,     atk:15,  def:2,   xp:15,  gold:[8,12],     drawKey:'wolf'         },
   bandit:        { name:'Bandit',         color:'#654321', hp:120,    atk:20,  def:5,   xp:20,  gold:[12,18],    drawKey:'bandit'       },
@@ -189,7 +189,7 @@ const enemyTypes = {
   tormented_soul: { name:'Tormented Soul', color:'#2a2a3a', hp:250,  atk:45,  def:8,   xp:100,  gold:[18,30],  drawKey:'tormented_soul', damageType:'dark' },
   pit_fiend:      { name:'Pit Fiend',      color:'#3a0505', hp:2500, atk:130, def:60,  xp:1500, gold:[200,400],drawKey:'pit_fiend',      damageType:'fire', isBoss:true },
 };
-const floorEnemies = { 0:['rat','rat','rat','rat','rat','rabbit','bird','squirrel','mole','frog'], 1:['slime','giant_rat'], 2:['skeleton','bat'], 3:['knight','dragon'] };
+const floorEnemies = { 0:['rat','rat','rat','rat','rat','rat','rat','rat','rat','rat','rabbit','bird','squirrel','mole','frog'], 1:['slime','giant_rat'], 2:['skeleton','bat'], 3:['knight','dragon'] };
 // One guaranteed boss per dungeon floor (separate from random enemy pool)
 const floorBosses = { 1:'slime_king', 2:'skeleton_king' };
 
