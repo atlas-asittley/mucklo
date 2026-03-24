@@ -197,6 +197,13 @@ Avoid unnecessary deep traversal of unrelated directories.
 
 ---
 
+## Git Safety Rules (RPG Project)
+
+- **NEVER** use `git reset --hard` or `git rebase` on main branch
+- **NEVER** use `git push --force` on main
+- **To undo:** use `git revert HEAD` (safe, doesn't rewrite history)
+- If a large revert is needed, ask Drew first
+
 ## Preferred Outcome
 
 The goal is not only to complete the current task, but to leave the codebase easier to understand for future sessions and future contributors.
