@@ -240,7 +240,10 @@ function movePlayer(dx, dy) {
   if (tile === T.STAIRS_DOWN) {
     if (game.currentMap === 'town') { enterTrainingGrounds(); return; }
     else if (game.currentMap === 'dragons_gate') enterDungeon(1, 'down');
-    else if (isDungeonMap(game.currentMap)) enterDungeon(currentFloor + 1, 'down');
+    else if (isDungeonMap(game.currentMap)) {
+      if (currentFloor >= 3) { msg('The stairs end here — you have reached the deepest level of the dungeon.'); return; }
+      enterDungeon(currentFloor + 1, 'down');
+    }
     return;
   }
   if (tile === T.STAIRS_UP) {
@@ -380,7 +383,10 @@ function interactInDirection(dx, dy) {
       game.player.x = nx; game.player.y = ny;
       if (game.currentMap === 'town') { enterTrainingGrounds(); return; }
       else if (game.currentMap === 'dragons_gate') enterDungeon(1, 'down');
-      else if (isDungeonMap(game.currentMap)) enterDungeon(currentFloor + 1, 'down');
+      else if (isDungeonMap(game.currentMap)) {
+        if (currentFloor >= 3) { msg('The stairs end here — you have reached the deepest level of the dungeon.'); return; }
+        enterDungeon(currentFloor + 1, 'down');
+      }
       return;
     }
     if (tile === T.STAIRS_UP) {

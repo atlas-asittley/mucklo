@@ -496,7 +496,7 @@ function generateTrainingGrounds() {
 const DUNGEON_STAIRS = {
   1: { up: {x:5, y:5},   down: {x:34, y:34} },  // up → exit to Dragon's Gate; down → floor 2
   2: { up: {x:5, y:5},   down: {x:34, y:34} },  // up → floor 1; down → floor 3
-  3: { up: {x:5, y:5} },                          // up → floor 2; deepest floor, no down stairs
+  3: { up: {x:5, y:5},   down: {x:34, y:34} },  // up → floor 2; down present for connectivity (deepest floor — can't descend further)
 };
 
 function generateDungeon(floor) {

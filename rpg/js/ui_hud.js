@@ -251,6 +251,13 @@ function loadGame() {
         }
       }
     }
+    // Migrate: regenerate floor 3 if it was saved without STAIRS_DOWN (old save).
+    // Old floor 3 maps had no down stairs, leaving the stair pocket isolated from rooms.
+    let f3Key = 'dragons_dungeon_floor_3';
+    if (generatedMaps[f3Key]) {
+      let hasDown = generatedMaps[f3Key].map.some(row => row.includes(T.STAIRS_DOWN));
+      if (!hasDown) { generatedMaps[f3Key] = null; dungeonData['dungeon_3'] = null; }
+    }
     if (isDungeonMap(game.currentMap)) {
       // If the stored map wasn't in the save (old save), generate fresh and cache it.
       let gmKey = `dragons_dungeon_floor_${currentFloor}`;
