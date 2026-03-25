@@ -535,16 +535,6 @@ function generateDungeonFloor1() {
   fillRect(m, 29, 21, 32, 26, T.FLOOR);  // R6 → R7  south
   fillRect(m,  4, 23,  7, 27, T.FLOOR);  // R4 → R8  south
 
-  // ── Doors ──────────────────────────────────────────────────────────────────
-  m[ 6][12] = T.DOOR;  // R1 east exit  → R2
-  m[ 6][23] = T.DOOR;  // R2 east exit  → R3
-  m[11][ 5] = T.DOOR;  // R1 south exit → R4
-  m[14][18] = T.DOOR;  // entering R5 from north
-  m[18][10] = T.DOOR;  // entering R5 from west
-  m[17][24] = T.DOOR;  // R5 east exit  → R6
-  m[22][21] = T.DOOR;  // R5 south exit → R7
-  m[23][ 4] = T.DOOR;  // R4 south exit → R8
-
   // ── Chests ─────────────────────────────────────────────────────────────────
   m[ 5][20] = T.CHEST;  // R2
   m[ 6][32] = T.CHEST;  // R3
@@ -586,16 +576,6 @@ function generateDungeonFloor2() {
   fillRect(m, 20, 30, 24, 32, T.FLOOR);  // R1 → R10 south
   fillRect(m,  3, 28,  7, 30, T.FLOOR);  // R3 → R11 south
   fillRect(m, 10, 33, 15, 36, T.FLOOR);  // R11 → R10 east
-
-  // ── Doors ──────────────────────────────────────────────────────────────────
-  m[25][20] = T.DOOR;  // R1 ↔ R2  west passage entry
-  m[24][10] = T.DOOR;  // R2 ↔ R3
-  m[18][ 6] = T.DOOR;  // R3 ↔ R4
-  m[11][ 6] = T.DOOR;  // R4 ↔ R5  descent chamber entry
-  m[15][12] = T.DOOR;  // R4 → R6 corridor
-  m[12][25] = T.DOOR;  // R6 → R7 corridor
-  m[24][31] = T.DOOR;  // R1 → R8 east corridor
-  m[32][26] = T.DOOR;  // R1 → R9 south corridor
 
   // ── Chests ─────────────────────────────────────────────────────────────────
   m[25][15] = T.CHEST;  // R2
@@ -647,18 +627,6 @@ function generateDungeonFloor3() {
   fillRect(m, 35, 30, 37, 33, T.FLOOR);  // R9  → R10 south
   fillRect(m, 30,  9, 35, 11, T.FLOOR);  // R3  → R11 south
   fillRect(m,  4, 33,  8, 36, T.FLOOR);  // R7  → R8  south
-
-  // ── Doors ──────────────────────────────────────────────────────────────────
-  m[ 6][11] = T.DOOR;  // R1 east exit
-  m[ 6][23] = T.DOOR;  // R2 east exit
-  m[11][ 5] = T.DOOR;  // R1 south exit → R12
-  m[15][10] = T.DOOR;  // R12 → R5 east
-  m[11][18] = T.DOOR;  // R2 → R5 south
-  m[15][21] = T.DOOR;  // R4 ↔ R5 bridge
-  m[20][16] = T.DOOR;  // R5 → R6 (throne entrance)
-  m[20][26] = T.DOOR;  // R4 → R6 south
-  m[22][33] = T.DOOR;  // R6 → R9 east
-  m[31][35] = T.DOOR;  // R9 → R10 south
 
   // ── Chests ─────────────────────────────────────────────────────────────────
   m[ 5][19] = T.CHEST;  // R2

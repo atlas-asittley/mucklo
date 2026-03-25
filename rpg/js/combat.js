@@ -389,6 +389,10 @@ function combatWin() {
       maps.world[combatEnemy.bossY][combatEnemy.bossX] = T.GRASS;
       game.flags[`boss_${bossKey}_dead`] = true;
     }
+    // Track dungeon boss kills so they don't respawn on floor re-entry
+    if (combatEnemy.isBoss && bossKey && combatEnemy.bossX === undefined) {
+      game.flags[`boss_${bossKey}_dead`] = true;
+    }
 
     // Level up check
     while (game.player.xp >= game.player.xpNext) {

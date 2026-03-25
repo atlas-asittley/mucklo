@@ -173,9 +173,16 @@ function spawnEnemies(floor, playerX, playerY) {
     types = types.filter(k => (enemyTypes[k].minLevel || 1) <= playerLevel);
     if (!types.length) types = ['rat'];
   }
+  let flags = (typeof game !== 'undefined' && game.flags) ? game.flags : {};
+  let bossAdded = false;
   for (let i = 0; i < 5 + floor * 3; i++) {
     let typeKey = types[Math.floor(Math.random() * types.length)];
     let type = enemyTypes[typeKey];
+    // At most one boss from the random pool per floor; skip if already killed
+    if (type.isBoss) {
+      if (bossAdded || flags[`boss_${typeKey}_dead`]) continue;
+      bossAdded = true;
+    }
     let pos = randomFloorTile(playerX, playerY, 5);
     if (pos) enemies.push({ ...type, typeKey, x: pos.x, y: pos.y, maxHp: type.hp, opacity: 1 });
   }
@@ -185,9 +192,9 @@ function spawnEnemies(floor, playerX, playerY) {
     let pos = randomFloorTile(playerX, playerY, 5);
     if (pos) enemies.push({ ...slimeKingType, typeKey: 'slime_king', x: pos.x, y: pos.y, maxHp: slimeKingType.hp, opacity: 1 });
   }
-  // Spawn guaranteed floor boss (separate from random pool)
+  // Spawn guaranteed floor boss (one per floor, skip if already killed)
   let bossKey = floorBosses[floor];
-  if (bossKey) {
+  if (bossKey && !bossAdded && !flags[`boss_${bossKey}_dead`]) {
     let bossType = enemyTypes[bossKey];
     let pos = randomFloorTile(playerX, playerY, 5);
     if (pos) enemies.push({ ...bossType, typeKey: bossKey, x: pos.x, y: pos.y, maxHp: bossType.hp, opacity: 1 });
