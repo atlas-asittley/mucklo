@@ -205,7 +205,7 @@ function openStats() {
         <div class="stat-row stat-clickable" onclick="toggleStatDesc('dex')"><span class="stat-label stat-dex">DEX</span><span class="stat-num">${p.DEX}</span><span class="stat-desc">Agility</span><span class="stat-row-caret">▾</span></div>
         <div class="stat-detail" id="stat-detail-dex"><div class="stat-detail-text">Increases dodge chance (0.5% per point) and critical hit chance (0.3% per point).</div><div class="stat-detail-derived">Current: ${dodgePct}% dodge / ${critPct}% crit</div></div>
         <div class="stat-row stat-clickable" onclick="toggleStatDesc('con')"><span class="stat-label stat-con">CON</span><span class="stat-num">${p.CON}</span><span class="stat-desc">Vitality</span><span class="stat-row-caret">▾</span></div>
-        <div class="stat-detail" id="stat-detail-con"><div class="stat-detail-text">Increases max HP. Each point adds 5 to your maximum health.</div><div class="stat-detail-derived">Current: +${(p.CON||10)*5} max HP from CON</div></div>
+        <div class="stat-detail" id="stat-detail-con"><div class="stat-detail-text">Increases max HP. Each point adds 5 to your maximum health. Also grants +1 HP per CON point on each level up.</div><div class="stat-detail-derived">Current: +${(p.CON||10)*5} max HP from CON | +${p.bonusHpFromLevels||0} max HP from level ups</div></div>
         <div class="stat-row stat-clickable" onclick="toggleStatDesc('int')"><span class="stat-label stat-int">INT</span><span class="stat-num">${p.INT}</span><span class="stat-desc">Intellect</span><span class="stat-row-caret">▾</span></div>
         <div class="stat-detail" id="stat-detail-int"><div class="stat-detail-text">Increases XP gain. Each point gives 2% bonus experience from enemies.</div><div class="stat-detail-derived">Current: ×${xpMult} XP multiplier</div></div>
         <div class="stat-row stat-clickable" onclick="toggleStatDesc('wis')"><span class="stat-label stat-wis">WIS</span><span class="stat-num">${p.WIS}</span><span class="stat-desc">Wisdom</span><span class="stat-row-caret">▾</span></div>
@@ -218,7 +218,7 @@ function openStats() {
       <div class="stats-section-title">DERIVED STATS</div>
       <div class="stats-derived">
         <div class="derived-row"><span class="derived-label">ATK POWER</span><span class="derived-val">${baseDmg} <span class="derived-note">(ATK ${p.atk} + STR/2 ${strBonus})</span></span></div>
-        <div class="derived-row"><span class="derived-label">MAX HP</span><span class="derived-val">${p.maxHp} <span class="derived-note">(100 + CON×5)</span></span></div>
+        <div class="derived-row"><span class="derived-label">MAX HP</span><span class="derived-val">${p.maxHp} <span class="derived-note">(base + CON×5 + ${p.bonusHpFromLevels||0} from levels)</span></span></div>
         <div class="derived-row"><span class="derived-label">DODGE</span><span class="derived-val">${dodgePct}%</span></div>
         <div class="derived-row"><span class="derived-label">CRIT CHANCE</span><span class="derived-val">${critPct}%</span></div>
         <div class="derived-row"><span class="derived-label">XP BONUS</span><span class="derived-val">×${xpMult}</span></div>
@@ -276,7 +276,7 @@ function switchTrainerTab(tab) {
 function renderTrainer() {
   let p = game.player;
   let stats = ['STR','DEX','CON','INT','WIS','CHA'];
-  let descs = { STR:'Power (+ATK)', DEX:'Agility (+Dodge/Crit)', CON:'Vitality (+5 MaxHP)', INT:'Intellect (+XP gain)', WIS:'Wisdom (+Heal bonus)', CHA:'Charisma (+Shop disc)' };
+  let descs = { STR:'Power (+ATK)', DEX:'Agility (+Dodge/Crit)', CON:'Vitality (+5 MaxHP, +1 HP/lvl)', INT:'Intellect (+XP gain)', WIS:'Wisdom (+Heal bonus)', CHA:'Charisma (+Shop disc)' };
   let container = document.getElementById('trainer-stats');
   container.innerHTML = '';
   for (let stat of stats) {

@@ -136,13 +136,14 @@ function calcDamage(atk, def) {
 
 function recalcMaxHp() {
   let maxHpBonus = ((game.setBonus || {})._appliedStats || {}).maxHp || 0;
+  let levelHp = game.player.bonusHpFromLevels || 0;
   if (game.player.classBaseHp !== undefined) {
     // Class-based formula: startHp grows by 5 per CON above the class's starting CON
     let baseCon = game.player.classBaseCon !== undefined ? game.player.classBaseCon : 10;
-    game.player.maxHp = game.player.classBaseHp + (game.player.CON - baseCon) * 5 + maxHpBonus;
+    game.player.maxHp = game.player.classBaseHp + (game.player.CON - baseCon) * 5 + levelHp + maxHpBonus;
   } else {
     // Legacy formula for pre-class saves
-    game.player.maxHp = 100 + game.player.CON * 5 + maxHpBonus;
+    game.player.maxHp = 100 + game.player.CON * 5 + levelHp + maxHpBonus;
   }
 }
 
