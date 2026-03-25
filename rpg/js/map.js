@@ -604,7 +604,7 @@ function generateDungeonFloor3() {
   fillRect(m, 27,  2, 37,  9, T.FLOOR);  // R3  Far NE              dead end
   fillRect(m, 22, 11, 28, 18, T.FLOOR);  // R4  East Entry Hall
   fillRect(m, 12, 12, 21, 19, T.FLOOR);  // R5  Boss Antechamber
-  fillRect(m,  8, 20, 33, 34, T.FLOOR);  // R6  Boss Throne         large; STAIRS_DOWN at 25,25
+  fillRect(m,  8, 20, 33, 34, T.FLOOR);  // R6  Boss Throne         large
   fillRect(m,  2, 22,  9, 33, T.FLOOR);  // R7  South Wing          adjacent to R6 at x=8/9
   fillRect(m,  3, 35, 12, 38, T.FLOOR);  // R8  Far South           dead end
   fillRect(m, 35, 20, 38, 30, T.FLOOR);  // R9  SE Vault            dead end
@@ -643,8 +643,7 @@ function generateDungeonFloor3() {
   m[17][ 6] = T.CHEST;  // R12
 
   // ── Stairs ─────────────────────────────────────────────────────────────────
-  m[ 5][ 5] = T.STAIRS_UP;    // entrance from floor 2
-  m[25][25] = T.STAIRS_DOWN;  // deepest floor — cannot descend further
+  m[ 5][ 5] = T.STAIRS_UP;    // entrance from floor 2 (floor 3 is the deepest — no stairs down)
 
   return { map: m, rooms: [] };
 }
