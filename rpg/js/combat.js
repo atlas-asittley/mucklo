@@ -249,7 +249,6 @@ function resolvePlayerHit(dmg, mainMsg, prependMsg, afterHitCallback, procSlot) 
 function applyLevelUp() {
   let p = game.player;
   p.lvl++;
-  p.CON = (p.CON || 10) + 3;
   recalcMaxHp();
   recalcMaxMana();
   p.hp = p.maxHp;
