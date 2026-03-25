@@ -502,43 +502,190 @@ const DUNGEON_STAIRS = {
   3: { up: {x:5, y:5},   down: {x:25, y:25} },  // up → floor 2; down present for connectivity (deepest floor — can't descend further)
 };
 
-function generateDungeon(floor) {
+// ─── Static hand-crafted dungeon floors ───────────────────────────────────────
+// Three fixed layouts for the Dragon's Dungeon. Each run always produces the
+// same map so players can learn routes and loot positions.
+//
+// Coordinate convention: m[y][x], origin top-left.
+// Floor 1: UP at (5,5)   top-left     DOWN at (25,25) centre-right
+// Floor 2: UP at (25,25) centre       DOWN at (5,5)   top-left
+// Floor 3: UP at (5,5)   top-left     DOWN at (25,25) centre (deepest — no descent)
+
+function generateDungeonFloor1() {
   let m = Array(MAP_H).fill(null).map(() => Array(MAP_W).fill(T.WALL));
-  let rooms = [];
-  for (let i = 0; i < 8 + floor * 2; i++) {
-    let rw = 4 + Math.floor(Math.random() * 5);
-    let rh = 4 + Math.floor(Math.random() * 5);
-    let rx = 2 + Math.floor(Math.random() * (MAP_W - rw - 4));
-    let ry = 2 + Math.floor(Math.random() * (MAP_H - rh - 4));
-    fillRect(m, rx, ry, rx + rw - 1, ry + rh - 1, T.FLOOR);
-    if (rooms.length > 0) {
-      let prev = rooms[rooms.length - 1];
-      carveCorridor(m, Math.floor(rx + rw/2), Math.floor(ry + rh/2), Math.floor(prev.x + prev.w/2), Math.floor(prev.y + prev.h/2));
-    }
-    rooms.push({ x: rx, y: ry, w: rw, h: rh });
-  }
-  // Place stairs at fixed positions, carving 3×3 floor around each so they're always reachable
-  let stairDef = DUNGEON_STAIRS[floor] || { up: {x:10, y:10} };
-  if (stairDef.up) {
-    let up = stairDef.up;
-    fillRect(m, up.x - 1, up.y - 1, up.x + 1, up.y + 1, T.FLOOR);
-    m[up.y][up.x] = T.STAIRS_UP;
-  }
-  if (stairDef.down) {
-    let dn = stairDef.down;
-    fillRect(m, dn.x - 1, dn.y - 1, dn.x + 1, dn.y + 1, T.FLOOR);
-    m[dn.y][dn.x] = T.STAIRS_DOWN;
-    // Carve a corridor connecting the two stair areas so there's always a path
-    let corridor_from = stairDef.up || dn;
-    carveCorridor(m, corridor_from.x, corridor_from.y, dn.x, dn.y);
-  }
-  for (let i = 0; i < 2 + floor; i++) {
-    let room = rooms[1 + Math.floor(Math.random() * (rooms.length - 1))];
-    let cx = room.x + 1 + Math.floor(Math.random() * (room.w - 2));
-    let cy = room.y + 1 + Math.floor(Math.random() * (room.h - 2));
-    if (m[cy][cx] === T.FLOOR) m[cy][cx] = T.CHEST;
-  }
-  return { map: m, rooms };
+
+  // ── Rooms ──────────────────────────────────────────────────────────────────
+  fillRect(m,  2,  2, 12, 11, T.FLOOR);  // R1 Entrance Hall   (STAIRS_UP at 5,5)
+  fillRect(m, 15,  2, 23,  9, T.FLOOR);  // R2 Guard Barracks
+  fillRect(m, 27,  3, 36,  9, T.FLOOR);  // R3 East Alcove      dead end
+  fillRect(m,  2, 15, 10, 23, T.FLOOR);  // R4 West Garrison
+  fillRect(m, 13, 14, 24, 22, T.FLOOR);  // R5 Central Hall
+  fillRect(m, 27, 13, 36, 21, T.FLOOR);  // R6 East Wing
+  fillRect(m, 18, 24, 33, 33, T.FLOOR);  // R7 Exit Chamber    (STAIRS_DOWN at 25,25)
+  fillRect(m,  2, 27, 10, 35, T.FLOOR);  // R8 Southwest Vault  dead end
+
+  // ── Corridors ──────────────────────────────────────────────────────────────
+  fillRect(m, 12,  5, 15,  8, T.FLOOR);  // R1 → R2  east
+  fillRect(m, 23,  4, 27,  8, T.FLOOR);  // R2 → R3  east
+  fillRect(m,  4, 11,  8, 15, T.FLOOR);  // R1 → R4  south
+  fillRect(m, 17,  9, 20, 14, T.FLOOR);  // R2 → R5  south
+  fillRect(m, 10, 17, 13, 20, T.FLOOR);  // R4 → R5  east
+  fillRect(m, 24, 15, 27, 19, T.FLOOR);  // R5 → R6  east
+  fillRect(m, 20, 22, 23, 26, T.FLOOR);  // R5 → R7  south
+  fillRect(m, 29, 21, 32, 26, T.FLOOR);  // R6 → R7  south
+  fillRect(m,  4, 23,  7, 27, T.FLOOR);  // R4 → R8  south
+
+  // ── Doors ──────────────────────────────────────────────────────────────────
+  m[ 6][12] = T.DOOR;  // R1 east exit  → R2
+  m[ 6][23] = T.DOOR;  // R2 east exit  → R3
+  m[11][ 5] = T.DOOR;  // R1 south exit → R4
+  m[14][18] = T.DOOR;  // entering R5 from north
+  m[18][10] = T.DOOR;  // entering R5 from west
+  m[17][24] = T.DOOR;  // R5 east exit  → R6
+  m[22][21] = T.DOOR;  // R5 south exit → R7
+  m[23][ 4] = T.DOOR;  // R4 south exit → R8
+
+  // ── Chests ─────────────────────────────────────────────────────────────────
+  m[ 5][20] = T.CHEST;  // R2
+  m[ 6][32] = T.CHEST;  // R3
+  m[19][ 7] = T.CHEST;  // R4
+  m[18][19] = T.CHEST;  // R5
+  m[17][31] = T.CHEST;  // R6
+  m[29][28] = T.CHEST;  // R7
+  m[31][ 6] = T.CHEST;  // R8
+
+  // ── Stairs ─────────────────────────────────────────────────────────────────
+  m[ 5][ 5] = T.STAIRS_UP;    // entrance from Dragon's Gate
+  m[25][25] = T.STAIRS_DOWN;  // descent to floor 2
+
+  return { map: m, rooms: [] };
+}
+
+function generateDungeonFloor2() {
+  let m = Array(MAP_H).fill(null).map(() => Array(MAP_W).fill(T.WALL));
+
+  // ── Rooms ──────────────────────────────────────────────────────────────────
+  // Main path: R1 → R2 → R3 → R4 → R5 (shared edges, no extra corridors needed)
+  fillRect(m, 20, 20, 31, 30, T.FLOOR);  // R1 Entry Chamber   (STAIRS_UP at 25,25)
+  fillRect(m, 10, 21, 20, 29, T.FLOOR);  // R2 West Passage     shares x=20 with R1
+  fillRect(m,  2, 18, 10, 28, T.FLOOR);  // R3 NW Hold          shares x=10 with R2
+  fillRect(m,  2, 11, 11, 18, T.FLOOR);  // R4 North Alcove     shares y=18 with R3
+  fillRect(m,  2,  2, 11, 11, T.FLOOR);  // R5 Descent Chamber (STAIRS_DOWN at 5,5) shares y=11 with R4
+  fillRect(m, 13,  9, 24, 17, T.FLOOR);  // R6 Central North
+  fillRect(m, 27,  2, 37, 12, T.FLOOR);  // R7 NE Wing          dead end
+  fillRect(m, 32, 19, 38, 29, T.FLOOR);  // R8 East Alcove      dead end
+  fillRect(m, 27, 32, 37, 38, T.FLOOR);  // R9 SE Dead End
+  fillRect(m, 15, 31, 26, 38, T.FLOOR);  // R10 South Branch
+  fillRect(m,  2, 30, 10, 37, T.FLOOR);  // R11 SW Corner
+
+  // ── Corridors ──────────────────────────────────────────────────────────────
+  fillRect(m, 11, 13, 13, 17, T.FLOOR);  // R4 → R6  east bridge
+  fillRect(m, 24, 10, 27, 14, T.FLOOR);  // R6 → R7  east
+  fillRect(m, 31, 22, 33, 27, T.FLOOR);  // R1 → R8  east
+  fillRect(m, 25, 30, 29, 33, T.FLOOR);  // R1 → R9  south
+  fillRect(m, 20, 30, 24, 32, T.FLOOR);  // R1 → R10 south
+  fillRect(m,  3, 28,  7, 30, T.FLOOR);  // R3 → R11 south
+  fillRect(m, 10, 33, 15, 36, T.FLOOR);  // R11 → R10 east
+
+  // ── Doors ──────────────────────────────────────────────────────────────────
+  m[25][20] = T.DOOR;  // R1 ↔ R2  west passage entry
+  m[24][10] = T.DOOR;  // R2 ↔ R3
+  m[18][ 6] = T.DOOR;  // R3 ↔ R4
+  m[11][ 6] = T.DOOR;  // R4 ↔ R5  descent chamber entry
+  m[15][12] = T.DOOR;  // R4 → R6 corridor
+  m[12][25] = T.DOOR;  // R6 → R7 corridor
+  m[24][31] = T.DOOR;  // R1 → R8 east corridor
+  m[32][26] = T.DOOR;  // R1 → R9 south corridor
+
+  // ── Chests ─────────────────────────────────────────────────────────────────
+  m[25][15] = T.CHEST;  // R2
+  m[23][ 6] = T.CHEST;  // R3
+  m[15][ 7] = T.CHEST;  // R4
+  m[13][19] = T.CHEST;  // R6
+  m[ 7][32] = T.CHEST;  // R7
+  m[24][35] = T.CHEST;  // R8
+  m[35][32] = T.CHEST;  // R9
+  m[35][20] = T.CHEST;  // R10
+  m[34][ 6] = T.CHEST;  // R11
+
+  // ── Stairs ─────────────────────────────────────────────────────────────────
+  m[25][25] = T.STAIRS_UP;   // entrance from floor 1
+  m[ 5][ 5] = T.STAIRS_DOWN; // descent to floor 3
+
+  return { map: m, rooms: [] };
+}
+
+function generateDungeonFloor3() {
+  let m = Array(MAP_H).fill(null).map(() => Array(MAP_W).fill(T.WALL));
+
+  // ── Rooms ──────────────────────────────────────────────────────────────────
+  fillRect(m,  2,  2, 11, 11, T.FLOOR);  // R1  Entry              (STAIRS_UP at 5,5)
+  fillRect(m, 14,  2, 23,  9, T.FLOOR);  // R2  North Corridor Room
+  fillRect(m, 27,  2, 37,  9, T.FLOOR);  // R3  Far NE              dead end
+  fillRect(m, 22, 11, 28, 18, T.FLOOR);  // R4  East Entry Hall
+  fillRect(m, 12, 12, 21, 19, T.FLOOR);  // R5  Boss Antechamber
+  fillRect(m,  8, 20, 33, 34, T.FLOOR);  // R6  Boss Throne         large; STAIRS_DOWN at 25,25
+  fillRect(m,  2, 22,  9, 33, T.FLOOR);  // R7  South Wing          adjacent to R6 at x=8/9
+  fillRect(m,  3, 35, 12, 38, T.FLOOR);  // R8  Far South           dead end
+  fillRect(m, 35, 20, 38, 30, T.FLOOR);  // R9  SE Vault            dead end
+  fillRect(m, 34, 32, 38, 38, T.FLOOR);  // R10 SE Corner           dead end
+  fillRect(m, 30, 11, 37, 18, T.FLOOR);  // R11 NE Stronghold       dead end
+  fillRect(m,  2, 13, 10, 21, T.FLOOR);  // R12 West Room           adjacent to R7 at y=21/22
+
+  // ── Corridors ──────────────────────────────────────────────────────────────
+  fillRect(m, 11,  4, 14,  8, T.FLOOR);  // R1  → R2  east
+  fillRect(m, 23,  4, 27,  8, T.FLOOR);  // R2  → R3  east
+  fillRect(m,  4, 11,  8, 13, T.FLOOR);  // R1  → R12 south
+  fillRect(m, 10, 14, 12, 18, T.FLOOR);  // R12 → R5  east
+  fillRect(m, 17,  9, 20, 12, T.FLOOR);  // R2  → R5  south
+  fillRect(m, 21, 13, 23, 17, T.FLOOR);  // R4  ↔ R5  bridge
+  fillRect(m, 28, 13, 30, 17, T.FLOOR);  // R4  → R11 east bridge
+  fillRect(m, 13, 19, 19, 21, T.FLOOR);  // R5  → R6  south (throne entrance)
+  fillRect(m, 24, 18, 28, 21, T.FLOOR);  // R4  → R6  south
+  fillRect(m, 30, 18, 33, 21, T.FLOOR);  // R11 → R6  south
+  fillRect(m, 33, 22, 36, 27, T.FLOOR);  // R6  → R9  east
+  fillRect(m, 35, 30, 37, 33, T.FLOOR);  // R9  → R10 south
+  fillRect(m, 30,  9, 35, 11, T.FLOOR);  // R3  → R11 south
+  fillRect(m,  4, 33,  8, 36, T.FLOOR);  // R7  → R8  south
+
+  // ── Doors ──────────────────────────────────────────────────────────────────
+  m[ 6][11] = T.DOOR;  // R1 east exit
+  m[ 6][23] = T.DOOR;  // R2 east exit
+  m[11][ 5] = T.DOOR;  // R1 south exit → R12
+  m[15][10] = T.DOOR;  // R12 → R5 east
+  m[11][18] = T.DOOR;  // R2 → R5 south
+  m[15][21] = T.DOOR;  // R4 ↔ R5 bridge
+  m[20][16] = T.DOOR;  // R5 → R6 (throne entrance)
+  m[20][26] = T.DOOR;  // R4 → R6 south
+  m[22][33] = T.DOOR;  // R6 → R9 east
+  m[31][35] = T.DOOR;  // R9 → R10 south
+
+  // ── Chests ─────────────────────────────────────────────────────────────────
+  m[ 5][19] = T.CHEST;  // R2
+  m[ 5][33] = T.CHEST;  // R3
+  m[14][25] = T.CHEST;  // R4
+  m[16][17] = T.CHEST;  // R5
+  m[28][14] = T.CHEST;  // R6 west
+  m[30][29] = T.CHEST;  // R6 east
+  m[27][ 6] = T.CHEST;  // R7
+  m[37][ 7] = T.CHEST;  // R8
+  m[25][37] = T.CHEST;  // R9
+  m[35][36] = T.CHEST;  // R10
+  m[14][33] = T.CHEST;  // R11
+  m[17][ 6] = T.CHEST;  // R12
+
+  // ── Stairs ─────────────────────────────────────────────────────────────────
+  m[ 5][ 5] = T.STAIRS_UP;    // entrance from floor 2
+  m[25][25] = T.STAIRS_DOWN;  // deepest floor — cannot descend further
+
+  return { map: m, rooms: [] };
+}
+
+function generateDungeon(floor) {
+  if (floor === 1) return generateDungeonFloor1();
+  if (floor === 2) return generateDungeonFloor2();
+  if (floor === 3) return generateDungeonFloor3();
+  return generateDungeonFloor1();
 }
 
 function carveCorridor(m, x1, y1, x2, y2) {
