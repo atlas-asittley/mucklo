@@ -490,13 +490,16 @@ function generateTrainingGrounds() {
 
 // Fixed stair positions per floor so navigation is deterministic.
 // UP stairs lead back to the previous floor (or exit to Dragon's Gate); DOWN stairs lead deeper.
-// Stairs are placed at opposite corners of the map so each floor must be explored.
-// Entering from above → player spawns near STAIRS_UP (the entrance from the floor above).
+// Each floor's DOWN stairs share the same position as the next floor's UP stairs, so the
+// player spawns exactly where they descended — no teleporting across the map.
+//   F1 DOWN (25,25) == F2 UP (25,25)
+//   F2 DOWN  (5, 5) == F3 UP  (5, 5)
+// Entering from above → player spawns near STAIRS_UP on the destination floor.
 // Going up (returning) → player spawns near STAIRS_DOWN on the destination floor.
 const DUNGEON_STAIRS = {
-  1: { up: {x:5, y:5},   down: {x:34, y:34} },  // up → exit to Dragon's Gate; down → floor 2
-  2: { up: {x:5, y:5},   down: {x:34, y:34} },  // up → floor 1; down → floor 3
-  3: { up: {x:5, y:5},   down: {x:34, y:34} },  // up → floor 2; down present for connectivity (deepest floor — can't descend further)
+  1: { up: {x:5, y:5},   down: {x:25, y:25} },  // up → exit to Dragon's Gate; down → floor 2
+  2: { up: {x:25, y:25}, down: {x:5, y:5}   },  // up → floor 1; down → floor 3
+  3: { up: {x:5, y:5},   down: {x:25, y:25} },  // up → floor 2; down present for connectivity (deepest floor — can't descend further)
 };
 
 function generateDungeon(floor) {
