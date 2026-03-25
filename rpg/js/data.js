@@ -109,85 +109,85 @@ const SET_DEFS = {
 
 const enemyTypes = {
   // ── Dungeon enemies (floor 1 ×2, floor 2 ×5, floor 3 ×10 of base) ─────────
-  slime:         { name:'Slime',          color:'#4a4',    hp:24,     atk:6,   def:0,   xp:8,   gold:[2,5],      drawKey:'slime'    },
-  giant_rat:     { name:'Giant Rat',      color:'#864',    hp:36,     atk:10,  def:2,   xp:12,  gold:[3,8],      drawKey:'giant_rat' },
-  skeleton:      { name:'Skeleton',       color:'#ddd',    hp:150,    atk:40,  def:10,  xp:20,  gold:[8,15],     drawKey:'skeleton' },
-  bat:           { name:'Cave Bat',       color:'#639',    hp:110,    atk:35,  def:5,   xp:15,  gold:[5,10],     drawKey:'bat'      },
-  knight:        { name:'Dark Knight',    color:'#335',    hp:450,    atk:120, def:50,  xp:35,  gold:[15,25],    drawKey:'knight',   damageType:'dark' },
-  dragon:        { name:'Dragon',         color:'#a22',    hp:1000,   atk:180, def:80,  xp:100, gold:[50,100],   drawKey:'dragon', isBoss:true, damageType:'fire' },
+  slime:         { name:'Slime',          color:'#4a4',    hp:24,     atk:12,  def:0,   xp:8,   gold:[2,5],      drawKey:'slime'    },
+  giant_rat:     { name:'Giant Rat',      color:'#864',    hp:36,     atk:20,  def:2,   xp:12,  gold:[3,8],      drawKey:'giant_rat' },
+  skeleton:      { name:'Skeleton',       color:'#ddd',    hp:150,    atk:80,  def:10,  xp:20,  gold:[8,15],     drawKey:'skeleton' },
+  bat:           { name:'Cave Bat',       color:'#639',    hp:110,    atk:70,  def:5,   xp:15,  gold:[5,10],     drawKey:'bat'      },
+  knight:        { name:'Dark Knight',    color:'#335',    hp:450,    atk:240, def:50,  xp:35,  gold:[15,25],    drawKey:'knight',   damageType:'dark' },
+  dragon:        { name:'Dragon',         color:'#a22',    hp:1000,   atk:360, def:80,  xp:100, gold:[50,100],   drawKey:'dragon', isBoss:true, damageType:'fire' },
   // ── Training Grounds (beginner area, tiered by player level) ─────────────
   // Tier 1 (lvl 1-2): Rat, Rabbit, Bird, Squirrel
-  rat:       { name:'Rat',       color:'#7a6a55', hp:60,  atk:8,  def:0, xp:15, gold:[1,2],   drawKey:'rat',      drops:['rat_tail'],          dropChance:0.2,  minLevel:1 },
-  rabbit:    { name:'Rabbit',    color:'#e0e0e0', hp:75,  atk:12, def:1, xp:25, gold:[2,4],   drawKey:'rabbit',   drops:['rabbit_fur_jacket'], dropChance:0.3,  minLevel:1 },
-  bird:      { name:'Bird',      color:'#3377bb', hp:80,  atk:15, def:2, xp:35, gold:[4,7],   drawKey:'bird',     drops:['feather'],           dropChance:0.35, minLevel:1 },
-  squirrel:  { name:'Squirrel',  color:'#7a3a10', hp:65,  atk:10, def:1, xp:20, gold:[3,5],   drawKey:'squirrel', drops:['acorn'],             dropChance:0.4,  minLevel:1 },
+  rat:       { name:'Rat',       color:'#7a6a55', hp:60,  atk:16, def:0, xp:15, gold:[1,2],   drawKey:'rat',      drops:['rat_tail'],          dropChance:0.2,  minLevel:1 },
+  rabbit:    { name:'Rabbit',    color:'#e0e0e0', hp:75,  atk:24, def:1, xp:25, gold:[2,4],   drawKey:'rabbit',   drops:['rabbit_fur_jacket'], dropChance:0.3,  minLevel:1 },
+  bird:      { name:'Bird',      color:'#3377bb', hp:80,  atk:30, def:2, xp:35, gold:[4,7],   drawKey:'bird',     drops:['feather'],           dropChance:0.35, minLevel:1 },
+  squirrel:  { name:'Squirrel',  color:'#7a3a10', hp:65,  atk:20, def:1, xp:20, gold:[3,5],   drawKey:'squirrel', drops:['acorn'],             dropChance:0.4,  minLevel:1 },
   // Tier 3 (lvl 3-4): Mole, Frog
-  mole:      { name:'Mole',      color:'#5c4033', hp:100, atk:20, def:3, xp:45, gold:[7,10],  drawKey:'mole',     minLevel:3 },
-  frog:      { name:'Frog',      color:'#4caf50', hp:90,  atk:22, def:2, xp:50, gold:[9,12],  drawKey:'frog',     minLevel:3 },
+  mole:      { name:'Mole',      color:'#5c4033', hp:100, atk:40, def:3, xp:45, gold:[7,10],  drawKey:'mole',     minLevel:3 },
+  frog:      { name:'Frog',      color:'#4caf50', hp:90,  atk:44, def:2, xp:50, gold:[9,12],  drawKey:'frog',     minLevel:3 },
   // Tier 4 (lvl 5-6): Badger, Snake
-  badger:    { name:'Badger',    color:'#78909c', hp:150, atk:28, def:6, xp:70, gold:[14,18], drawKey:'badger',   minLevel:5 },
-  snake:     { name:'Snake',     color:'#8bc34a', hp:120, atk:32, def:4, xp:65, gold:[12,15], drawKey:'snake',    minLevel:5 },
+  badger:    { name:'Badger',    color:'#78909c', hp:150, atk:56, def:6, xp:70, gold:[14,18], drawKey:'badger',   minLevel:5 },
+  snake:     { name:'Snake',     color:'#8bc34a', hp:120, atk:64, def:4, xp:65, gold:[12,15], drawKey:'snake',    minLevel:5 },
   // Tier 5 (lvl 7+): Wild Boar, Hawk
-  wild_boar: { name:'Wild Boar', color:'#8d6e63', hp:200, atk:40, def:8, xp:90, gold:[18,24], drawKey:'wild_boar', minLevel:7 },
-  hawk:      { name:'Hawk',      color:'#ff8f00', hp:180, atk:45, def:5, xp:80, gold:[16,22], drawKey:'hawk',     minLevel:7 },
+  wild_boar: { name:'Wild Boar', color:'#8d6e63', hp:200, atk:80, def:8, xp:90, gold:[18,24], drawKey:'wild_boar', minLevel:7 },
+  hawk:      { name:'Hawk',      color:'#ff8f00', hp:180, atk:90, def:5, xp:80, gold:[16,22], drawKey:'hawk',     minLevel:7 },
   // ── World map — Near road (1-3 tiles) — warmup ────────────────────────────
-  wolf:          { name:'Wolf',           color:'#8b5e3c', hp:80,     atk:15,  def:2,   xp:15,  gold:[8,12],     drawKey:'wolf'         },
-  bandit:        { name:'Bandit',         color:'#654321', hp:120,    atk:20,  def:5,   xp:20,  gold:[12,18],    drawKey:'bandit'       },
-  goblin:        { name:'Goblin',         color:'#5a8f3c', hp:60,     atk:18,  def:3,   xp:15,  gold:[10,14],    drawKey:'goblin'       },
+  wolf:          { name:'Wolf',           color:'#8b5e3c', hp:80,     atk:30,  def:2,   xp:15,  gold:[8,12],     drawKey:'wolf'         },
+  bandit:        { name:'Bandit',         color:'#654321', hp:120,    atk:40,  def:5,   xp:20,  gold:[12,18],    drawKey:'bandit'       },
+  goblin:        { name:'Goblin',         color:'#5a8f3c', hp:60,     atk:36,  def:3,   xp:15,  gold:[10,14],    drawKey:'goblin'       },
   // ── Dungeon floor bosses ───────────────────────────────────────────────────
-  slime_king:    { name:'Slime King',     color:'#22bb55', hp:300,    atk:20,  def:5,   xp:40,  gold:[20,30],    drawKey:'slime_king',  isBoss:true },
-  skeleton_king: { name:'Skeleton King', color:'#eeeebb', hp:800,    atk:70,  def:25,  xp:60,  gold:[30,50],    drawKey:'skeleton_king', isBoss:true, damageType:'dark' },
+  slime_king:    { name:'Slime King',     color:'#22bb55', hp:300,    atk:40,  def:5,   xp:40,  gold:[20,30],    drawKey:'slime_king',  isBoss:true },
+  skeleton_king: { name:'Skeleton King', color:'#eeeebb', hp:800,    atk:140, def:25,  xp:60,  gold:[30,50],    drawKey:'skeleton_king', isBoss:true, damageType:'dark' },
   // ── World map — Mid distance (4-7 tiles) — dangerous ─────────────────────
-  dark_knight:   { name:'Dark Knight',    color:'#334466', hp:5000,   atk:80,  def:20,  xp:80,  gold:[45,55],    drawKey:'dark_knight', isBoss:true, damageType:'dark' },
-  cave_troll:    { name:'Cave Troll',     color:'#556b2f', hp:8000,   atk:60,  def:30,  xp:90,  gold:[50,60],    drawKey:'cave_troll',  isBoss:true },
-  wyvern:        { name:'Wyvern',         color:'#8b0000', hp:4000,   atk:100, def:15,  xp:100, gold:[60,70],    drawKey:'wyvern'       },
+  dark_knight:   { name:'Dark Knight',    color:'#334466', hp:5000,   atk:160, def:20,  xp:80,  gold:[45,55],    drawKey:'dark_knight', isBoss:true, damageType:'dark' },
+  cave_troll:    { name:'Cave Troll',     color:'#556b2f', hp:8000,   atk:120, def:30,  xp:90,  gold:[50,60],    drawKey:'cave_troll',  isBoss:true },
+  wyvern:        { name:'Wyvern',         color:'#8b0000', hp:4000,   atk:200, def:15,  xp:100, gold:[60,70],    drawKey:'wyvern'       },
   // ── World map — Far from road (8+ tiles) — world boss markers ─────────────
-  elder_dragon:  { name:'Elder Dragon',   color:'#cc2200', hp:500000, atk:300, def:80,  xp:500, gold:[180,220],  drawKey:'elder_dragon', isBoss:true },
-  void_hydra:    { name:'Void Hydra',     color:'#6600cc', hp:400000, atk:250, def:60,  xp:450, gold:[160,200],  drawKey:'void_hydra',  isBoss:true, damageType:'dark' },
-  titan_golem:   { name:'Titan Golem',    color:'#778899', hp:800000, atk:200, def:150, xp:400, gold:[130,170],  drawKey:'titan_golem', isBoss:true },
+  elder_dragon:  { name:'Elder Dragon',   color:'#cc2200', hp:500000, atk:600, def:80,  xp:500, gold:[180,220],  drawKey:'elder_dragon', isBoss:true },
+  void_hydra:    { name:'Void Hydra',     color:'#6600cc', hp:400000, atk:500, def:60,  xp:450, gold:[160,200],  drawKey:'void_hydra',  isBoss:true, damageType:'dark' },
+  titan_golem:   { name:'Titan Golem',    color:'#778899', hp:800000, atk:400, def:150, xp:400, gold:[130,170],  drawKey:'titan_golem', isBoss:true },
   // ── Volcanic Wastes (level 5+ scaling) ────────────────────────────────────
-  ember_sprite:    { name:'Ember Sprite',    color:'#ff4500', hp:40,  atk:15, def:2,  xp:25,  gold:[8,14],   drawKey:'ember_sprite',    damageType:'fire' },
-  lava_crab:       { name:'Lava Crab',       color:'#8b2500', hp:80,  atk:20, def:8,  xp:40,  gold:[14,22],  drawKey:'lava_crab',       damageType:'fire' },
-  fire_elemental:  { name:'Fire Elemental',  color:'#ff6600', hp:150, atk:35, def:5,  xp:80,  gold:[22,34],  drawKey:'fire_elemental',  damageType:'fire' },
-  molten_golem:    { name:'Molten Golem',    color:'#5a1a0a', hp:300, atk:50, def:15, xp:150, gold:[40,60],  drawKey:'molten_golem',    damageType:'fire', isBoss:true },
+  ember_sprite:    { name:'Ember Sprite',    color:'#ff4500', hp:40,  atk:30, def:2,  xp:25,  gold:[8,14],   drawKey:'ember_sprite',    damageType:'fire' },
+  lava_crab:       { name:'Lava Crab',       color:'#8b2500', hp:80,  atk:40, def:8,  xp:40,  gold:[14,22],  drawKey:'lava_crab',       damageType:'fire' },
+  fire_elemental:  { name:'Fire Elemental',  color:'#ff6600', hp:150, atk:70, def:5,  xp:80,  gold:[22,34],  drawKey:'fire_elemental',  damageType:'fire' },
+  molten_golem:    { name:'Molten Golem',    color:'#5a1a0a', hp:300, atk:100, def:15, xp:150, gold:[40,60],  drawKey:'molten_golem',    damageType:'fire', isBoss:true },
   // ── Frozen Peaks (level 6+ scaling) ───────────────────────────────────────
-  frost_sprite:      { name:'Frost Sprite',      color:'#a8d8ea', hp:30,  atk:12, def:3,  xp:20,  gold:[7,12],   drawKey:'frost_sprite',      damageType:'ice' },
-  snow_wolf:         { name:'Snow Wolf',          color:'#e8f4f8', hp:90,  atk:22, def:6,  xp:45,  gold:[15,25],  drawKey:'snow_wolf',         damageType:'ice' },
-  ice_revenant:      { name:'Ice Revenant',       color:'#1a5c7a', hp:160, atk:30, def:12, xp:85,  gold:[25,40],  drawKey:'ice_revenant',      damageType:'ice' },
-  ancient_frost_giant: { name:'Ancient Frost Giant', color:'#0d2d44', hp:350, atk:45, def:20, xp:180, gold:[50,80],  drawKey:'ancient_frost_giant', damageType:'ice', isBoss:true },
+  frost_sprite:      { name:'Frost Sprite',      color:'#a8d8ea', hp:30,  atk:24, def:3,  xp:20,  gold:[7,12],   drawKey:'frost_sprite',      damageType:'ice' },
+  snow_wolf:         { name:'Snow Wolf',          color:'#e8f4f8', hp:90,  atk:44, def:6,  xp:45,  gold:[15,25],  drawKey:'snow_wolf',         damageType:'ice' },
+  ice_revenant:      { name:'Ice Revenant',       color:'#1a5c7a', hp:160, atk:60, def:12, xp:85,  gold:[25,40],  drawKey:'ice_revenant',      damageType:'ice' },
+  ancient_frost_giant: { name:'Ancient Frost Giant', color:'#0d2d44', hp:350, atk:90, def:20, xp:180, gold:[50,80],  drawKey:'ancient_frost_giant', damageType:'ice', isBoss:true },
   // ── Shadow Forest (level 7+ scaling) ──────────────────────────────────────
-  shadow_spider:   { name:'Shadow Spider',   color:'#1a1a0a', hp:50,  atk:18, def:4,  xp:35,  gold:[10,18],  drawKey:'shadow_spider',   damageType:'poison' },
-  venom_wolf:      { name:'Venom Wolf',      color:'#2d3a1a', hp:100, atk:25, def:5,  xp:50,  gold:[16,26],  drawKey:'venom_wolf',      damageType:'poison' },
-  forest_wraith:   { name:'Forest Wraith',   color:'#3d2b1f', hp:180, atk:35, def:8,  xp:90,  gold:[28,44],  drawKey:'forest_wraith',   damageType:'dark' },
-  ancient_treant:  { name:'Ancient Treant',  color:'#0a1a0a', hp:400, atk:40, def:25, xp:200, gold:[60,90],  drawKey:'ancient_treant',  damageType:'poison', isBoss:true },
+  shadow_spider:   { name:'Shadow Spider',   color:'#1a1a0a', hp:50,  atk:36, def:4,  xp:35,  gold:[10,18],  drawKey:'shadow_spider',   damageType:'poison' },
+  venom_wolf:      { name:'Venom Wolf',      color:'#2d3a1a', hp:100, atk:50, def:5,  xp:50,  gold:[16,26],  drawKey:'venom_wolf',      damageType:'poison' },
+  forest_wraith:   { name:'Forest Wraith',   color:'#3d2b1f', hp:180, atk:70, def:8,  xp:90,  gold:[28,44],  drawKey:'forest_wraith',   damageType:'dark' },
+  ancient_treant:  { name:'Ancient Treant',  color:'#0a1a0a', hp:400, atk:80, def:25, xp:200, gold:[60,90],  drawKey:'ancient_treant',  damageType:'poison', isBoss:true },
   // ── Dwarf Fortress (level 8+ scaling) ─────────────────────────────────────
-  dwarf_militia:   { name:'Dwarf Militia',   color:'#5a5a5a', hp:120, atk:25, def:10, xp:55,  gold:[18,28],  drawKey:'dwarf_militia'   },
-  rock_golem:      { name:'Rock Golem',      color:'#3a3a3a', hp:250, atk:35, def:20, xp:100, gold:[30,50],  drawKey:'rock_golem'      },
-  siege_dwarf:     { name:'Siege Dwarf',     color:'#8b6914', hp:180, atk:40, def:8,  xp:80,  gold:[25,40],  drawKey:'siege_dwarf'     },
-  forge_guardian:  { name:'Forge Guardian',  color:'#cd9b1d', hp:500, atk:55, def:30, xp:250, gold:[70,110], drawKey:'forge_guardian',  isBoss:true },
+  dwarf_militia:   { name:'Dwarf Militia',   color:'#5a5a5a', hp:120, atk:50, def:10, xp:55,  gold:[18,28],  drawKey:'dwarf_militia'   },
+  rock_golem:      { name:'Rock Golem',      color:'#3a3a3a', hp:250, atk:70, def:20, xp:100, gold:[30,50],  drawKey:'rock_golem'      },
+  siege_dwarf:     { name:'Siege Dwarf',     color:'#8b6914', hp:180, atk:80, def:8,  xp:80,  gold:[25,40],  drawKey:'siege_dwarf'     },
+  forge_guardian:  { name:'Forge Guardian',  color:'#cd9b1d', hp:500, atk:110, def:30, xp:250, gold:[70,110], drawKey:'forge_guardian',  isBoss:true },
   // ── Ruins of Aethoria (level 9+ scaling) ──────────────────────────────────
-  skeleton_archer:  { name:'Skeleton Archer',  color:'#d4a017', hp:80,  atk:28, def:5,  xp:45,  gold:[14,24],  drawKey:'skeleton_archer'  },
-  undead_knight:    { name:'Undead Knight',    color:'#8b6914', hp:200, atk:40, def:15, xp:100, gold:[32,52],  drawKey:'undead_knight'    },
-  corrupted_priest: { name:'Corrupted Priest', color:'#f5e6c8', hp:150, atk:30, def:10, xp:80,  gold:[26,42],  drawKey:'corrupted_priest', damageType:'holy' },
-  ancient_guardian: { name:'Ancient Guardian', color:'#4a3728', hp:600, atk:60, def:35, xp:300, gold:[90,140], drawKey:'ancient_guardian', damageType:'holy', isBoss:true },
+  skeleton_archer:  { name:'Skeleton Archer',  color:'#d4a017', hp:80,  atk:56, def:5,  xp:45,  gold:[14,24],  drawKey:'skeleton_archer'  },
+  undead_knight:    { name:'Undead Knight',    color:'#8b6914', hp:200, atk:80, def:15, xp:100, gold:[32,52],  drawKey:'undead_knight'    },
+  corrupted_priest: { name:'Corrupted Priest', color:'#f5e6c8', hp:150, atk:60, def:10, xp:80,  gold:[26,42],  drawKey:'corrupted_priest', damageType:'holy' },
+  ancient_guardian: { name:'Ancient Guardian', color:'#4a3728', hp:600, atk:120, def:35, xp:300, gold:[90,140], drawKey:'ancient_guardian', damageType:'holy', isBoss:true },
   // ── The Abyss (level 15+ required) ────────────────────────────────────────
-  abyssal_crawler: { name:'Abyssal Crawler', color:'#1a0a2a', hp:800,  atk:80,  def:20, xp:250,  gold:[80,120],  drawKey:'abyssal_crawler', damageType:'dark' },
-  void_wraith:     { name:'Void Wraith',     color:'#2a0a3a', hp:1200, atk:100, def:30, xp:400,  gold:[120,180], drawKey:'void_wraith',     damageType:'dark' },
-  reality_ripper:  { name:'Reality Ripper',  color:'#0a1a3a', hp:1500, atk:120, def:40, xp:600,  gold:[160,240], drawKey:'reality_ripper',  damageType:'dark' },
-  elder_thing:     { name:'Elder Thing',     color:'#1a0a1a', hp:2000, atk:150, def:50, xp:800,  gold:[200,300], drawKey:'elder_thing',     damageType:'dark' },
-  the_unnamed_one: { name:'The Unnamed One', color:'#0a0014', hp:5000, atk:200, def:80, xp:2000, gold:[400,600], drawKey:'the_unnamed_one', damageType:'dark', isBoss:true },
+  abyssal_crawler: { name:'Abyssal Crawler', color:'#1a0a2a', hp:800,  atk:160, def:20, xp:250,  gold:[80,120],  drawKey:'abyssal_crawler', damageType:'dark' },
+  void_wraith:     { name:'Void Wraith',     color:'#2a0a3a', hp:1200, atk:200, def:30, xp:400,  gold:[120,180], drawKey:'void_wraith',     damageType:'dark' },
+  reality_ripper:  { name:'Reality Ripper',  color:'#0a1a3a', hp:1500, atk:240, def:40, xp:600,  gold:[160,240], drawKey:'reality_ripper',  damageType:'dark' },
+  elder_thing:     { name:'Elder Thing',     color:'#1a0a1a', hp:2000, atk:300, def:50, xp:800,  gold:[200,300], drawKey:'elder_thing',     damageType:'dark' },
+  the_unnamed_one: { name:'The Unnamed One', color:'#0a0014', hp:5000, atk:400, def:80, xp:2000, gold:[400,600], drawKey:'the_unnamed_one', damageType:'dark', isBoss:true },
   // ── Sunken Temple (level 8+ scaling) ──────────────────────────────────────
-  drowned_spirit:   { name:'Drowned Spirit',   color:'#4a8ab0', hp:200,  atk:30,  def:8,  xp:80,  gold:[20,35],  drawKey:'drowned_spirit',   damageType:'ice'  },
-  water_elemental:  { name:'Water Elemental',  color:'#1a5a7a', hp:350,  atk:45,  def:15, xp:150, gold:[40,65],  drawKey:'water_elemental',  damageType:'ice'  },
-  temple_guardian:  { name:'Temple Guardian',  color:'#2a3a4a', hp:500,  atk:55,  def:25, xp:200, gold:[60,90],  drawKey:'temple_guardian'                     },
-  siren:            { name:'Siren',            color:'#6090b0', hp:250,  atk:40,  def:10, xp:160, gold:[45,70],  drawKey:'siren',            damageType:'ice'  },
-  drowned_king:     { name:'The Drowned King', color:'#0a2a3a', hp:1500, atk:80,  def:40, xp:800, gold:[250,350],drawKey:'drowned_king',     damageType:'ice', isBoss:true },
+  drowned_spirit:   { name:'Drowned Spirit',   color:'#4a8ab0', hp:200,  atk:60,  def:8,  xp:80,  gold:[20,35],  drawKey:'drowned_spirit',   damageType:'ice'  },
+  water_elemental:  { name:'Water Elemental',  color:'#1a5a7a', hp:350,  atk:90,  def:15, xp:150, gold:[40,65],  drawKey:'water_elemental',  damageType:'ice'  },
+  temple_guardian:  { name:'Temple Guardian',  color:'#2a3a4a', hp:500,  atk:110, def:25, xp:200, gold:[60,90],  drawKey:'temple_guardian'                     },
+  siren:            { name:'Siren',            color:'#6090b0', hp:250,  atk:80,  def:10, xp:160, gold:[45,70],  drawKey:'siren',            damageType:'ice'  },
+  drowned_king:     { name:'The Drowned King', color:'#0a2a3a', hp:1500, atk:160, def:40, xp:800, gold:[250,350],drawKey:'drowned_king',     damageType:'ice', isBoss:true },
   // ── The Underworld (level 12+ required) ──────────────────────────────────
-  imp:            { name:'Imp',            color:'#8b0000', hp:150,  atk:35,  def:5,   xp:60,   gold:[10,20],  drawKey:'imp',            damageType:'fire' },
-  hell_hound:     { name:'Hell Hound',     color:'#3a0a0a', hp:300,  atk:55,  def:12,  xp:120,  gold:[20,35],  drawKey:'hell_hound',     damageType:'fire' },
-  demon_soldier:  { name:'Demon Soldier',  color:'#5a0a0a', hp:450,  atk:70,  def:20,  xp:180,  gold:[35,55],  drawKey:'demon_soldier',  damageType:'fire' },
-  tormented_soul: { name:'Tormented Soul', color:'#2a2a3a', hp:250,  atk:45,  def:8,   xp:100,  gold:[18,30],  drawKey:'tormented_soul', damageType:'dark' },
-  pit_fiend:      { name:'Pit Fiend',      color:'#3a0505', hp:2500, atk:130, def:60,  xp:1500, gold:[200,400],drawKey:'pit_fiend',      damageType:'fire', isBoss:true },
+  imp:            { name:'Imp',            color:'#8b0000', hp:150,  atk:70,  def:5,   xp:60,   gold:[10,20],  drawKey:'imp',            damageType:'fire' },
+  hell_hound:     { name:'Hell Hound',     color:'#3a0a0a', hp:300,  atk:110, def:12,  xp:120,  gold:[20,35],  drawKey:'hell_hound',     damageType:'fire' },
+  demon_soldier:  { name:'Demon Soldier',  color:'#5a0a0a', hp:450,  atk:140, def:20,  xp:180,  gold:[35,55],  drawKey:'demon_soldier',  damageType:'fire' },
+  tormented_soul: { name:'Tormented Soul', color:'#2a2a3a', hp:250,  atk:90,  def:8,   xp:100,  gold:[18,30],  drawKey:'tormented_soul', damageType:'dark' },
+  pit_fiend:      { name:'Pit Fiend',      color:'#3a0505', hp:2500, atk:260, def:60,  xp:1500, gold:[200,400],drawKey:'pit_fiend',      damageType:'fire', isBoss:true },
 };
 const floorEnemies = { 0:['rat','rat','rat','rat','rat','rat','rat','rat','rat','rat','rabbit','bird','squirrel','mole','frog'], 1:['slime','giant_rat'], 2:['skeleton','bat'], 3:['knight','dragon'] };
 // One guaranteed boss per dungeon floor (separate from random enemy pool)
@@ -376,7 +376,7 @@ const npcs = {
 
 // ─── SPARRING ─────────────────────────────────────────────────────────────────
 const sparringOpponents = [
-  { name:'Training Dummy', hp:1000000, atk:1, def:0, xp:5, drawKey:'skeleton', label:'BEGINNER' },
+  { name:'Training Dummy', hp:1000000, atk:2, def:0, xp:5, drawKey:'skeleton', label:'BEGINNER' },
 ];
 
 // ─── ITEMS ───────────────────────────────────────────────────────────────────
