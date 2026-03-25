@@ -251,12 +251,14 @@ function loadGame() {
         }
       }
     }
-    // Migrate: regenerate floor 3 if it was saved without STAIRS_DOWN (old save).
-    // Old floor 3 maps had no down stairs, leaving the stair pocket isolated from rooms.
-    let f3Key = 'dragons_dungeon_floor_3';
-    if (generatedMaps[f3Key]) {
-      let hasDown = generatedMaps[f3Key].map.some(row => row.includes(T.STAIRS_DOWN));
-      if (!hasDown) { generatedMaps[f3Key] = null; dungeonData['dungeon_3'] = null; }
+    // Migrate: clear dungeon floors saved with T.DOOR tiles (pre-redesign procedural maps).
+    // The hand-crafted floor generators no longer use T.DOOR; old procedural maps did.
+    for (let floor = 1; floor <= 3; floor++) {
+      let gmKey = `dragons_dungeon_floor_${floor}`;
+      if (generatedMaps[gmKey]) {
+        let hasDoor = generatedMaps[gmKey].map.some(row => row.includes(T.DOOR));
+        if (hasDoor) { generatedMaps[gmKey] = null; dungeonData[`dungeon_${floor}`] = null; }
+      }
     }
     // Migrate: regenerate any floor saved without STAIRS_UP (old save format lacked up stairs).
     // Without STAIRS_UP the player cannot return to the previous floor.
