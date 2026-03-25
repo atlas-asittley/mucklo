@@ -258,6 +258,15 @@ function loadGame() {
       let hasDown = generatedMaps[f3Key].map.some(row => row.includes(T.STAIRS_DOWN));
       if (!hasDown) { generatedMaps[f3Key] = null; dungeonData['dungeon_3'] = null; }
     }
+    // Migrate: regenerate any floor saved without STAIRS_UP (old save format lacked up stairs).
+    // Without STAIRS_UP the player cannot return to the previous floor.
+    for (let floor = 1; floor <= 3; floor++) {
+      let gmKey = `dragons_dungeon_floor_${floor}`;
+      if (generatedMaps[gmKey]) {
+        let hasUp = generatedMaps[gmKey].map.some(row => row.includes(T.STAIRS_UP));
+        if (!hasUp) { generatedMaps[gmKey] = null; dungeonData[`dungeon_${floor}`] = null; }
+      }
+    }
     if (isDungeonMap(game.currentMap)) {
       // If the stored map wasn't in the save (old save), generate fresh and cache it.
       let gmKey = `dragons_dungeon_floor_${currentFloor}`;
