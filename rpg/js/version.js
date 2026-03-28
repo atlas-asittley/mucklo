@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit
 const GAME_VERSION = {
-  commit: '26bcb12',
-  date: '2026-03-28 20:15 UTC',
-  message: 'Update members section: add present/past roster, redesign with visual separation'
+  commit: '00a3f2b',
+  date: '2026-03-28 20:16 UTC',
+  message: 'Fix song links in music section - add Bandcamp track URLs to all 6 tracks on Personas EP'
 };
