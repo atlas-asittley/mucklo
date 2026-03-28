@@ -59,7 +59,7 @@
       align-items: center;
       padding: 1.2rem 3rem;
       background: linear-gradient(to bottom, rgba(5,5,7,0.98) 0%, transparent 100%);
-      border-bottom: 1px solid rgba(177,79,255,0.12);
+      border-bottom: 1px solid rgba(57,255,20,0.12);
       backdrop-filter: blur(6px);
     }
 
@@ -69,7 +69,7 @@
       letter-spacing: 0.35em;
       color: var(--neon);
       text-decoration: none;
-      text-shadow: 0 0 18px rgba(177,79,255,0.7);
+      text-shadow: 0 0 18px rgba(57,255,20,0.7);
     }
 
     .nav-links {
@@ -89,7 +89,7 @@
 
     .nav-links a:hover {
       color: var(--neon);
-      text-shadow: 0 0 12px rgba(177,79,255,0.8);
+      text-shadow: 0 0 12px rgba(57,255,20,0.8);
     }
 
     /* ── HERO ── */
@@ -115,13 +115,13 @@
     }
     .blob-1 {
       width: 600px; height: 600px;
-      background: radial-gradient(circle, #5e2ca5, #0a0a12);
+      background: radial-gradient(circle, #2ca55e, #0a0a12);
       top: -150px; left: -150px;
       animation-duration: 22s;
     }
     .blob-2 {
       width: 500px; height: 500px;
-      background: radial-gradient(circle, #b14fff, #2d1b69);
+      background: radial-gradient(circle, #39ff14, #1a5c2e);
       bottom: -100px; right: -100px;
       animation-duration: 16s;
       animation-delay: -8s;
@@ -174,9 +174,9 @@
       line-height: 0.9;
       color: var(--white);
       text-shadow:
-        0 0 40px rgba(177,79,255,0.6),
-        0 0 80px rgba(177,79,255,0.3),
-        0 0 120px rgba(177,79,255,0.15);
+        0 0 40px rgba(57,255,20,0.6),
+        0 0 80px rgba(57,255,20,0.3),
+        0 0 120px rgba(57,255,20,0.15);
       animation: fadeUp 1s ease forwards;
       animation-delay: 0.4s;
       opacity: 0;
@@ -901,7 +901,7 @@
       nav { padding: 1rem 1.5rem; }
       .nav-links { gap: 1.5rem; }
       .bio-grid { grid-template-columns: 1fr; gap: 2rem; }
-      .members-grid { grid-template-columns: repeat(2, 1fr); }
+      .members-category .members-grid { grid-template-columns: repeat(3, 1fr); }
       .links-grid { grid-template-columns: 1fr 1fr; }
       .ep-header { flex-direction: column; gap: 1.5rem; }
       .tracklist { grid-template-columns: 1fr; }
@@ -1074,26 +1074,45 @@
       <h2 class="section-title reveal">Members</h2>
       <div class="divider reveal"></div>
 
-      <div class="members-grid">
-        <div class="member-card reveal">
-          <div class="member-avatar">&#127927;</div>
-          <p class="member-name">Michael Hall</p>
-          <p class="member-role">Drums / Vocals</p>
+      <div class="members-category">
+        <p class="category-label present reveal">Present</p>
+        <div class="members-grid">
+          <div class="member-card present reveal">
+            <div class="member-avatar">&#127927;</div>
+            <p class="member-name">Michael Hall</p>
+            <p class="member-role">Vocals, guitar, keyboard</p>
+          </div>
+          <div class="member-card present reveal">
+            <div class="member-avatar">&#127928;</div>
+            <p class="member-name">Drew Sittley</p>
+            <p class="member-role">Guitar, keyboard</p>
+          </div>
+          <div class="member-card present reveal">
+            <div class="member-avatar">&#127932;</div>
+            <p class="member-name">Bill Gant</p>
+            <p class="member-role">Bass</p>
+          </div>
         </div>
-        <div class="member-card reveal">
-          <div class="member-avatar">&#127928;</div>
-          <p class="member-name">Drew Sittley</p>
-          <p class="member-role">Guitar</p>
-        </div>
-        <div class="member-card reveal">
-          <div class="member-avatar">&#127932;</div>
-          <p class="member-name">Bill Gant</p>
-          <p class="member-role">Bass</p>
-        </div>
-        <div class="member-card reveal">
-          <div class="member-avatar">&#127911;</div>
-          <p class="member-name">Gibson Wells</p>
-          <p class="member-role">Instruments</p>
+      </div>
+
+      <div class="members-category">
+        <p class="category-label past reveal">Past</p>
+        <div class="members-grid">
+          <div class="member-card past reveal">
+            <div class="member-avatar">&#127911;</div>
+            <p class="member-name">Gibson Wells</p>
+            <p class="member-role">Drums</p>
+          </div>
+          <div class="member-card past reveal">
+            <div class="member-avatar">&#129344;</div>
+            <p class="member-name">Trevor Barnes</p>
+            <p class="member-role">Drums</p>
+          </div>
+          <div class="member-card past reveal">
+            <div class="member-avatar">&#127908;</div>
+            <p class="member-name">Phil Rifle</p>
+            <p class="member-role">Vocals</p>
+          </div>
         </div>
       </div>
     </div>
