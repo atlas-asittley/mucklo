@@ -875,20 +875,25 @@
     }
 
     /* ── GLITCH EFFECT on hover ── */
-    .glitch {
-      position: relative;
-    }
-
-    .glitch:hover {
-      animation: glitch 0.4s steps(2) forwards;
+    .hero-title.glitch:hover::before {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      color: var(--white);
+      text-shadow: 0 0 40px rgba(57,255,20,0.6), 0 0 80px rgba(57,255,20,0.3), 0 0 120px rgba(57,255,20,0.15);
+      animation: glitch 0.6s steps(8) forwards;
     }
 
     @keyframes glitch {
-      0%   { text-shadow: 2px 0 var(--neon2), -2px 0 var(--cyan); }
-      25%  { text-shadow: -2px 0 var(--neon2), 2px 0 var(--cyan); }
-      50%  { text-shadow: 2px 0 var(--cyan), -2px 0 var(--neon2); }
-      75%  { text-shadow: -2px 0 var(--cyan), 2px 0 var(--neon); }
-      100% { text-shadow: 0 0 40px rgba(57,255,20,0.6), 0 0 80px rgba(57,255,20,0.3); }
+      0%   { text-shadow: 4px 0 var(--neon2), -4px 0 var(--cyan); transform: translateX(0) skewX(0deg); clip-path: inset(0 0 60% 0); }
+      12%  { text-shadow: -4px 0 var(--neon2), 4px 0 var(--cyan); transform: translateX(-2px) skewX(-5deg); clip-path: inset(20% 0 30% 0); }
+      25%  { text-shadow: 4px 0 var(--cyan), -4px 0 var(--neon2); transform: translateX(2px) skewX(5deg); clip-path: inset(50% 0 10% 0); }
+      37%  { text-shadow: -3px 0 var(--neon2), 3px 0 var(--neon); transform: translateX(-1px) skewX(-3deg); clip-path: inset(10% 0 50% 0); }
+      50%  { text-shadow: 3px 0 var(--neon), -3px 0 var(--cyan); transform: translateX(1px) skewX(3deg); clip-path: inset(40% 0 20% 0); }
+      62%  { text-shadow: -2px 0 var(--cyan), 2px 0 var(--neon2); transform: translateX(-1px) skewX(-2deg); clip-path: inset(70% 0 0 0); }
+      75%  { text-shadow: 2px 0 var(--neon2), -2px 0 var(--neon); transform: translateX(1px) skewX(2deg); clip-path: inset(5% 0 60% 0); }
+      87%  { text-shadow: -2px 0 var(--neon), 2px 0 var(--cyan); transform: translateX(0) skewX(-1deg); clip-path: inset(30% 0 30% 0); }
+      100% { text-shadow: none; transform: none; clip-path: inset(0); }
     }
 
     /* ── SCROLL REVEAL ── */
@@ -949,7 +954,7 @@
     <div class="blob blob-3"></div>
 
     <p class="hero-eyebrow">Megaphauna Records &mdash; Frankfort, Indiana</p>
-    <h1 class="hero-title glitch">MUCKLO</h1>
+    <h1 class="hero-title glitch" data-text="MUCKLO">MUCKLO</h1>
     <p class="hero-tagline">Psych-Rock from the <span>Midwest</span></p>
 
     <div class="hero-cta">

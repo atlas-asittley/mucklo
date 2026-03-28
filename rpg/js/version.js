@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit
 const GAME_VERSION = {
-  commit: '7b9d446',
-  date: '2026-03-28 20:25 UTC',
-  message: 'Replace EPK section with embedded YouTube video'
+  commit: '1d9163c',
+  date: '2026-03-28 20:30 UTC',
+  message: 'Remove randomGlitch loop — MUCKLO title animates once on load, stays static'
 };
