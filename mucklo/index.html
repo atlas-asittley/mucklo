@@ -1347,21 +1347,7 @@
 
     sections.forEach(s => navObserver.observe(s));
 
-    // Glitch on hero title random flicker
-    const heroTitle = document.querySelector('.hero-title');
-    function randomGlitch() {
-      heroTitle.style.animation = 'none';
-      heroTitle.offsetHeight; // reflow
-      heroTitle.style.animation = '';
-
-      const delay = 3000 + Math.random() * 8000;
-      setTimeout(() => {
-        heroTitle.classList.add('glitch-active');
-        setTimeout(() => heroTitle.classList.remove('glitch-active'), 400);
-        randomGlitch();
-      }, delay);
-    }
-    randomGlitch();
+    // Glitch effect only on hover — no auto-flicker loop
   </script>
 </body>
 </html>

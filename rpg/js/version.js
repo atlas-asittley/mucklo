@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit
 const GAME_VERSION = {
-  commit: 'b5f59f3',
-  date: '2026-03-28 20:17 UTC',
-  message: 'Update Mucklo website: green color scheme, links fixes, EPK, mailing list, previous shows'
+  commit: '7b9d446',
+  date: '2026-03-28 20:25 UTC',
+  message: 'Replace EPK section with embedded YouTube video'
 };
