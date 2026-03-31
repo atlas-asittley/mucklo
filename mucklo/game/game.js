@@ -861,6 +861,7 @@ const Game = (() => {
   }
 
   function closeDialog() {
+    if (!dialogActive) return;
     document.getElementById('dialog-box').classList.remove('active');
     dialogActive = false;
     const cb = dialogCallback;
@@ -978,6 +979,7 @@ const Game = (() => {
   }
 
   function checkInteract() {
+    if (!worldState) return;
     const poi = POI.find(p => {
       return Math.abs(p.x - worldState.px) <= 1 && Math.abs(p.y - worldState.py) <= 1;
     });
@@ -1040,7 +1042,12 @@ const Game = (() => {
     initTitle();
   }
 
-  return { startCharSelect, startWorld, restart, onBattleEnd, initTitle };
+  function handleAction() {
+    if (state === 'dialog') closeDialog();
+    else if (state === 'world') checkInteract();
+  }
+
+  return { startCharSelect, startWorld, restart, onBattleEnd, initTitle, handleWorldInput, closeDialog, checkInteract, handleAction };
 })();
 
 // ═══════════════════════════════════════════════════
@@ -1069,6 +1076,28 @@ const Battle = (() => {
     turnEffects = { playerAtkBuff: 0, playerDefBuff: 0, playerSpdBuff: 0, enemyDefDebuff: 0 };
 
     startLoop();
+
+    // Canvas tap for skill selection (also provides desktop click support)
+    const bCanvas = document.getElementById('battle-canvas');
+    bCanvas.onclick = handleBattleCanvasTap;
+    bCanvas.ontouchstart = handleBattleCanvasTap;
+
+    // Populate HTML battle skill buttons (shown on mobile)
+    const typeColors = { atk: C.NEO2, heal: C.NEO, buff: C.GOLD, debuff: C.CYAN };
+    player.skills.forEach((skill, i) => {
+      const btn = document.getElementById(`bskill-${i}`);
+      if (!btn) return;
+      btn.innerHTML =
+        `<span class="bskill-name">${skill.name}</span>` +
+        `<span class="bskill-meta"><span style="color:${skill.cost === 0 ? C.MUTED : C.CYAN}">${skill.cost === 0 ? 'FREE' : `MP: ${skill.cost}`}</span>` +
+        ` <span style="color:${typeColors[skill.type] || C.TEXT}">[${skill.type.toUpperCase()}]</span></span>` +
+        `<span class="bskill-desc">${skill.desc}</span>`;
+      btn.onclick = () => {
+        if (phase !== 'select') return;
+        selectedSkill = i;
+        useSkill(i);
+      };
+    });
   }
 
   function startLoop() {
@@ -1198,6 +1227,14 @@ const Battle = (() => {
         phase = 'enemy';
         setTimeout(() => doEnemyTurn(), 400);
       }
+    }
+
+    // Sync HTML battle button states
+    if (player) {
+      player.skills.forEach((skill, i) => {
+        const btn = document.getElementById(`bskill-${i}`);
+        if (btn) btn.disabled = phase !== 'select' || player.mp < skill.cost;
+      });
     }
   }
 
@@ -1343,6 +1380,26 @@ const Battle = (() => {
     });
   }
 
+  function handleBattleCanvasTap(e) {
+    e.preventDefault();
+    if (phase !== 'select') return;
+    const canvas = document.getElementById('battle-canvas');
+    const rect = canvas.getBoundingClientRect();
+    const src = e.touches ? e.changedTouches[0] : e;
+    const x = (src.clientX - rect.left) * (800 / rect.width);
+    const y = (src.clientY - rect.top) * (600 / rect.height);
+    // Skill menu occupies y 460-598, arranged in 2 cols × 2 rows
+    if (y >= 460 && y <= 598) {
+      const col = x < 402 ? 0 : 1;
+      const row = y < 528 ? 0 : 1;
+      const idx = row * 2 + col;
+      if (idx >= 0 && idx < player.skills.length) {
+        selectedSkill = idx;
+        useSkill(idx);
+      }
+    }
+  }
+
   // ── INPUT ──
   function handleInput(key) {
     if (phase !== 'select') return;
@@ -1466,3 +1523,70 @@ function hexToRgb(hex) {
 
 // ── BOOT ────────────────────────────────────────────
 Game.initTitle();
+
+// ── MOBILE / RESIZE SUPPORT ─────────────────────────
+function resizeGame() {
+  const container = document.getElementById('game-container');
+  const scale = Math.min(window.innerWidth / 800, window.innerHeight / 600);
+  if (scale < 1) {
+    const sw = Math.round(800 * scale);
+    const sh = Math.round(600 * scale);
+    container.style.transform = `scale(${scale})`;
+    container.style.transformOrigin = 'top left';
+    container.style.position = 'absolute';
+    container.style.left = `${Math.round((window.innerWidth - sw) / 2)}px`;
+    container.style.top = `${Math.round((window.innerHeight - sh) / 2)}px`;
+    document.body.style.alignItems = 'flex-start';
+    document.body.style.justifyContent = 'flex-start';
+  } else {
+    container.style.transform = '';
+    container.style.transformOrigin = '';
+    container.style.position = 'relative';
+    container.style.left = '';
+    container.style.top = '';
+    document.body.style.alignItems = '';
+    document.body.style.justifyContent = '';
+  }
+}
+
+window.addEventListener('resize', resizeGame);
+resizeGame();
+
+// ── D-PAD & TOUCH SETUP ──────────────────────────────
+(function() {
+  let moveInterval = null;
+
+  function startMove(key) {
+    Game.handleWorldInput(key);
+    clearInterval(moveInterval);
+    moveInterval = setInterval(() => Game.handleWorldInput(key), 180);
+  }
+
+  function stopMove() {
+    clearInterval(moveInterval);
+    moveInterval = null;
+  }
+
+  document.querySelectorAll('.dpad-btn').forEach(btn => {
+    const key = btn.dataset.key;
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); startMove(key); }, { passive: false });
+    btn.addEventListener('touchend', stopMove, { passive: true });
+    btn.addEventListener('touchcancel', stopMove, { passive: true });
+    btn.addEventListener('mousedown', (e) => { e.preventDefault(); startMove(key); });
+    btn.addEventListener('mouseup', stopMove);
+    btn.addEventListener('mouseleave', stopMove);
+  });
+
+  const actionBtn = document.getElementById('btn-action');
+  if (actionBtn) {
+    const doAction = () => Game.handleAction();
+    actionBtn.addEventListener('touchstart', (e) => { e.preventDefault(); doAction(); }, { passive: false });
+    actionBtn.addEventListener('click', doAction);
+  }
+
+  const dialogBox = document.getElementById('dialog-box');
+  if (dialogBox) {
+    dialogBox.addEventListener('click', () => Game.closeDialog());
+    dialogBox.addEventListener('touchstart', (e) => { e.preventDefault(); Game.closeDialog(); }, { passive: false });
+  }
+})();

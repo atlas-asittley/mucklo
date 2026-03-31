@@ -256,6 +256,104 @@
     .end-title.lose { color: var(--neon2); text-shadow: 0 0 30px rgba(255,60,172,0.8); }
     .end-msg { font-size: 0.75rem; color: var(--text); letter-spacing: 0.1em; line-height: 1.8; max-width: 500px; }
     .end-stats { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; }
+
+    /* ── MOBILE / TOUCH CONTROLS ── */
+    #touch-dpad {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      z-index: 101;
+    }
+    .dpad-row-mid {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .dpad-btn {
+      width: 58px; height: 58px;
+      background: rgba(5,5,7,0.82);
+      border: 1px solid rgba(57,255,20,0.35);
+      color: var(--neon);
+      font-family: 'Courier New', monospace;
+      font-size: 1.1rem;
+      cursor: pointer;
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dpad-center {
+      width: 58px; height: 58px;
+      background: rgba(5,5,7,0.4);
+      border: 1px solid rgba(57,255,20,0.08);
+      border-radius: 3px;
+    }
+    #btn-action {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 76px; height: 76px;
+      background: rgba(5,5,7,0.82);
+      border: 1px solid rgba(0,229,255,0.35);
+      color: var(--cyan);
+      font-family: 'Courier New', monospace;
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 50%;
+      display: none;
+      align-items: center; justify-content: center;
+      flex-direction: column;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      z-index: 101;
+    }
+    .dpad-btn:active { background: rgba(57,255,20,0.14); border-color: var(--neon); }
+    #btn-action:active { background: rgba(0,229,255,0.14); border-color: var(--cyan); }
+    #battle-skill-btns {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 132px;
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      padding: 2px;
+      background: rgba(5,5,7,0.94);
+      border-top: 1px solid rgba(57,255,20,0.2);
+      z-index: 50;
+    }
+    .bskill-btn {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(57,255,20,0.15);
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: 0.68rem;
+      padding: 0.5rem 0.6rem;
+      cursor: pointer;
+      text-align: left;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      display: flex; flex-direction: column; gap: 2px;
+      overflow: hidden;
+    }
+    .bskill-btn:active { background: rgba(57,255,20,0.08); border-color: var(--neon); }
+    .bskill-btn:disabled { opacity: 0.35; cursor: default; }
+    .bskill-name { font-weight: bold; color: var(--text); font-size: 0.7rem; }
+    .bskill-meta { font-size: 0.55rem; }
+    .bskill-desc { color: var(--muted); font-size: 0.55rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (hover: none), (max-width: 860px) {
+      #touch-dpad, #btn-action { display: flex; }
+      #battle-skill-btns { display: grid; }
+      .char-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .btn { min-height: 44px; font-size: 0.8rem; }
+    }
+    #dialog-box { cursor: pointer; }
   </style>
 </head>
 <body>
@@ -273,14 +371,14 @@
       </div>
       <div class="press-start" id="press-start" onclick="Game.startCharSelect()">[ Press Enter to Begin ]</div>
     </div>
-    <div class="title-footer">Midwest Psych-Rock RPG &nbsp;·&nbsp; v1.0 &nbsp;·&nbsp; Use Arrow Keys + Enter/Space</div>
+    <div class="title-footer">Midwest Psych-Rock RPG &nbsp;·&nbsp; v1.0 &nbsp;·&nbsp; Arrow Keys + Enter &nbsp;·&nbsp; Touch D-pad on mobile</div>
   </div>
 
   <!-- CHARACTER SELECT -->
   <div id="char-screen" class="screen">
     <div class="screen-title">&gt; Select Your Bandmate &lt;</div>
     <div class="char-grid" id="char-grid"></div>
-    <div class="char-desc" id="char-desc">Hover a bandmate to learn more.</div>
+    <div class="char-desc" id="char-desc">Tap a bandmate to select.</div>
     <button class="btn" id="start-quest-btn" onclick="Game.startWorld()" disabled>[ Begin the Quest ]</button>
   </div>
 
@@ -290,13 +388,31 @@
     <div id="dialog-box">
       <div id="dialog-speaker"></div>
       <div id="dialog-text"></div>
-      <div id="dialog-continue">&gt; Press Enter to continue</div>
+      <div id="dialog-continue">&gt; Tap here or press Enter to continue</div>
     </div>
+    <!-- Touch D-pad (mobile) -->
+    <div id="touch-dpad">
+      <button class="dpad-btn" id="btn-up" data-key="ArrowUp">▲</button>
+      <div class="dpad-row-mid">
+        <button class="dpad-btn" id="btn-left" data-key="ArrowLeft">◀</button>
+        <div class="dpad-center"></div>
+        <button class="dpad-btn" id="btn-right" data-key="ArrowRight">▶</button>
+      </div>
+      <button class="dpad-btn" id="btn-down" data-key="ArrowDown">▼</button>
+    </div>
+    <button id="btn-action">✦<br><small style="font-size:0.38rem;letter-spacing:0.06em">ACT</small></button>
   </div>
 
   <!-- BATTLE SCREEN -->
   <div id="battle-screen" class="screen">
     <canvas id="battle-canvas" width="800" height="600"></canvas>
+    <!-- Battle skill buttons (mobile touch) -->
+    <div id="battle-skill-btns">
+      <button class="bskill-btn" id="bskill-0"></button>
+      <button class="bskill-btn" id="bskill-1"></button>
+      <button class="bskill-btn" id="bskill-2"></button>
+      <button class="bskill-btn" id="bskill-3"></button>
+    </div>
   </div>
 
   <!-- END SCREEN -->
