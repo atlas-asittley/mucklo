@@ -160,14 +160,15 @@
   };
 
   // Input state
-  const keys = { left: false, right: false, jump: false };
-  let jumpConsumed = false;
+  const keys = { left: false, right: false };
+  let jumpPressed  = false; // pulse: set on press, cleared by game loop each frame
+  let jumpKeyDown  = false; // tracks physical key state to ignore key-repeat
 
   document.addEventListener('keydown', e => {
     if (['ArrowLeft','a','A'].includes(e.key))  keys.left  = true;
     if (['ArrowRight','d','D'].includes(e.key)) keys.right = true;
-    if (['ArrowUp','w','W',' '].includes(e.key) && !jumpConsumed) {
-      keys.jump = true; jumpConsumed = true;
+    if (['ArrowUp','w','W',' '].includes(e.key) && !jumpKeyDown) {
+      jumpPressed = true; jumpKeyDown = true;
     }
     if (['r','R'].includes(e.key)) resetGame();
     e.preventDefault();
@@ -175,13 +176,13 @@
   document.addEventListener('keyup', e => {
     if (['ArrowLeft','a','A'].includes(e.key))  keys.left  = false;
     if (['ArrowRight','d','D'].includes(e.key)) keys.right = false;
-    if (['ArrowUp','w','W',' '].includes(e.key)) { keys.jump = false; jumpConsumed = false; }
+    if (['ArrowUp','w','W',' '].includes(e.key)) jumpKeyDown = false;
   });
 
   function makeTouchBtn(id, key) {
     const btn = document.getElementById(id);
     const on  = e => { e.preventDefault(); keys[key] = true;  btn.classList.add('pressed'); };
-    const off = e => { e.preventDefault(); keys[key] = false; jumpConsumed = false; btn.classList.remove('pressed'); };
+    const off = e => { e.preventDefault(); keys[key] = false; btn.classList.remove('pressed'); };
     btn.addEventListener('touchstart', on,  { passive: false });
     btn.addEventListener('touchend',   off, { passive: false });
     btn.addEventListener('touchcancel',off, { passive: false });
@@ -192,10 +193,11 @@
   makeTouchBtn('leftBtn',  'left');
   makeTouchBtn('rightBtn', 'right');
 
-  // Jump button needs de-bounce
+  // Jump button — set jumpPressed pulse on each press; touchend doesn't clear it
+  // (the game loop consumes and clears jumpPressed each frame)
   const jBtn = document.getElementById('jumpBtn');
-  const jOn  = e => { e.preventDefault(); if (!jumpConsumed) { keys.jump = true; jumpConsumed = true; } jBtn.classList.add('pressed'); };
-  const jOff = e => { e.preventDefault(); keys.jump = false; jumpConsumed = false; jBtn.classList.remove('pressed'); };
+  const jOn  = e => { e.preventDefault(); jumpPressed = true; jBtn.classList.add('pressed'); };
+  const jOff = e => { e.preventDefault(); jBtn.classList.remove('pressed'); };
   jBtn.addEventListener('touchstart', jOn,  { passive: false });
   jBtn.addEventListener('touchend',   jOff, { passive: false });
   jBtn.addEventListener('touchcancel',jOff, { passive: false });
@@ -203,9 +205,12 @@
   jBtn.addEventListener('mouseup',    jOff);
   jBtn.addEventListener('mouseleave', jOff);
 
-  // Restart on tap when on game-over/win screen
-  document.addEventListener('touchstart', () => {
-    if (gameState === 'gameover' || gameState === 'winscreen') resetGame();
+  // Restart on tap — only when on game-over/win screen, and not on control buttons
+  document.addEventListener('touchstart', e => {
+    if ((gameState === 'gameover' || gameState === 'winscreen') &&
+        !e.target.closest('#controls')) {
+      resetGame();
+    }
   });
 
   // Tile types
@@ -292,7 +297,6 @@
 
   // Game objects
   let score, coins, lives, gameState, camera, flagSlide, winTimer;
-  let jumpWasDown;
 
   const mario = { x:0, y:0, w:14, h:16, vx:0, vy:0, onGround:false, facingRight:true, animFrame:0, animTimer:0, invincible:0 };
 
@@ -318,7 +322,7 @@
     score = 0; coins = 0; lives = 3; camera = 0;
     gameState = 'playing';
     flagSlide = -1; winTimer = 0;
-    jumpWasDown = false;
+    jumpPressed = false; jumpKeyDown = false;
 
     mario.x = 48; mario.y = (GROUND_ROW - 2) * TILE;
     mario.vx = 0; mario.vy = 0;
@@ -466,9 +470,9 @@
     else if (keys.right) { mario.vx =  WALK_SPD; mario.facingRight = true;  }
     else mario.vx *= 0.65;
 
-    // Jump
-    if (keys.jump && !jumpWasDown && mario.onGround) mario.vy = JUMP_FORCE;
-    jumpWasDown = keys.jump;
+    // Jump — jumpPressed is a pulse flag set by input, cleared here each frame
+    if (jumpPressed && mario.onGround) mario.vy = JUMP_FORCE;
+    jumpPressed = false;
 
     // Gravity
     mario.vy = Math.min(mario.vy + GRAVITY, MAX_FALL);
