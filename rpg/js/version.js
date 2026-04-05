@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit
 const GAME_VERSION = {
-  commit: 'd118031',
-  date: '2026-04-05 02:28 UTC',
-  message: 'Add Mario Bros World 1-1 clone — canvas platformer with mobile controls'
+  commit: '69c8f98',
+  date: '2026-04-05 12:46 UTC',
+  message: 'Fix mobile jump button in Mario clone'
 };
