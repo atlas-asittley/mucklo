@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit
 const GAME_VERSION = {
-  commit: 'ee70894',
-  date: '2026-04-04 22:16 UTC',
-  message: 'Add Clue tracker — smart deduction tracker for Clue/Cluedo games'
+  commit: '6af874d',
+  date: '2026-04-05 02:21 UTC',
+  message: 'Add Super Atlas Bros — World 1-1 Mario-style platformer'
 };
