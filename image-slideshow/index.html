@@ -350,9 +350,6 @@ h1 {
 
 <script>
 const PROXY = 'https://api.allorigins.win/get?url=';
-const DDG_URL = q => `https://duckduckgo.com/?q=${encodeURIComponent(q)}&ia=images&iax=images`;
-const DDG_TOKEN_URL = q => `https://duckduckgo.com/?q=${encodeURIComponent(q)}&ia=images`;
-const DDG_API = (q, vqd) => `https://duckduckgo.com/i.js?q=${encodeURIComponent(q)}&vqd=${encodeURIComponent(vqd)}&o=json&l=us-en&p=1&s=0&u=bing&f=,,,&l=us-en`;
 
 const $ = id => document.getElementById(id);
 
@@ -500,7 +497,7 @@ imageDisplay.addEventListener('touchend', e => {
   touchStartX = null;
 }, { passive: true });
 
-// Fetch images via DuckDuckGo
+// Fetch images via DuckDuckGo (proxied through allorigins to bypass CORS)
 async function fetchImages(query) {
   showState('loading');
   stopAutoTimer();
@@ -508,28 +505,48 @@ async function fetchImages(query) {
 
   try {
     // Step 1: Get vqd token from DDG search page
-    const tokenUrl = PROXY + encodeURIComponent(DDG_TOKEN_URL(query));
-    const tokenResp = await fetch(tokenUrl);
-    if (!tokenResp.ok) throw new Error(`Token fetch failed: ${tokenResp.status}`);
+    const tokenPageUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=images`;
+    const tokenResp = await fetch(PROXY + encodeURIComponent(tokenPageUrl));
+    if (!tokenResp.ok) throw new Error(`Proxy request failed (${tokenResp.status}) — check your connection`);
     const tokenData = await tokenResp.json();
-    const html = tokenData.contents || '';
 
-    // Extract vqd token
-    const vqdMatch = html.match(/vqd=['"]([^'"]+)['"]/);
-    if (!vqdMatch) throw new Error('Could not extract vqd token from DDG response');
-    const vqd = vqdMatch[1];
+    if (tokenData.status && tokenData.status.http_code >= 400) {
+      throw new Error(`DuckDuckGo returned ${tokenData.status.http_code} — try again shortly`);
+    }
+
+    const html = tokenData.contents || '';
+    if (!html) throw new Error('Empty response from proxy — DuckDuckGo may be unavailable');
+
+    // Extract vqd token — try multiple patterns DuckDuckGo has used
+    let vqd = null;
+    for (const pattern of [
+      /vqd=['"]([^'"]+)['"]/,
+      /vqd=([0-9][0-9\-a-zA-Z_]*)/,
+      /"vqd"\s*:\s*"([^"]+)"/,
+      /data-vqd="([^"]+)"/,
+    ]) {
+      const m = html.match(pattern);
+      if (m) { vqd = m[1]; break; }
+    }
+    if (!vqd) throw new Error('Could not find vqd token — DuckDuckGo may have changed their API');
 
     // Step 2: Fetch image results
-    const apiUrl = PROXY + encodeURIComponent(DDG_API(query, vqd));
-    const apiResp = await fetch(apiUrl);
-    if (!apiResp.ok) throw new Error(`API fetch failed: ${apiResp.status}`);
+    const apiEndpoint = `https://duckduckgo.com/i.js?q=${encodeURIComponent(query)}&vqd=${encodeURIComponent(vqd)}&o=json&l=us-en&p=1&s=0&u=bing&f=,,,`;
+    const apiResp = await fetch(PROXY + encodeURIComponent(apiEndpoint));
+    if (!apiResp.ok) throw new Error(`Image API request failed (${apiResp.status})`);
     const apiData = await apiResp.json();
-    const parsed = JSON.parse(apiData.contents || '{}');
 
-    const results = parsed.results || [];
-    if (!results.length) throw new Error('No images found for that search.');
+    let parsed;
+    try {
+      parsed = JSON.parse(apiData.contents || '{}');
+    } catch (_) {
+      throw new Error('Failed to parse image results — unexpected response format');
+    }
 
-    images = results.slice(0, 50); // cap at 50
+    const results = (parsed.results || []).filter(r => r && r.image);
+    if (!results.length) throw new Error('No images found — try a different search term');
+
+    images = results.slice(0, 50);
     current = 0;
     showState('images');
     showImage(0);
