@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit
 const GAME_VERSION = {
-  commit: 'c195a05',
-  date: '2026-04-07 21:52 UTC',
-  message: 'Add image slideshow app'
+  commit: 'f825ea3',
+  date: '2026-04-07 21:56 UTC',
+  message: 'Fix DuckDuckGo CORS: robust vqd extraction and better error handling'
 };

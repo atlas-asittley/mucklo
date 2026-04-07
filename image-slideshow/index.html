@@ -322,7 +322,7 @@ h1 {
 
   <div class="error" id="errorBox">
     <p id="errorMsg">Something went wrong.</p>
-    <small>DuckDuckGo may have blocked the request — try a different search or check your connection.</small>
+    <small>Try a different search term or check your connection.</small>
   </div>
 
   <div class="image-display" id="imageDisplay">
@@ -331,7 +331,7 @@ h1 {
         <div class="spinner"></div>
       </div>
       <div class="img-error-overlay" id="imgErrorOverlay">
-        <span>⚠️</span>
+        <span>&#9888;&#65039;</span>
         <span>Image failed to load</span>
       </div>
       <img id="mainImg" src="" alt="" />
@@ -349,7 +349,7 @@ h1 {
 </div>
 
 <script>
-const PROXY = 'https://api.allorigins.win/get?url=';
+const COMMONS_API = 'https://commons.wikimedia.org/w/api.php';
 
 const $ = id => document.getElementById(id);
 
@@ -401,12 +401,12 @@ function showImage(idx) {
   current = ((idx % images.length) + images.length) % images.length;
   const img = images[current];
 
-  // Reset overlays
   imgLoadingOverlay.style.display = 'flex';
   imgErrorOverlay.style.display = 'none';
   mainImg.style.opacity = '0';
 
-  mainImg.src = img.image;
+  mainImg.src = img.url;
+  mainImg.alt = img.title || '';
   imgCaption.textContent = img.title || '';
 
   updateCounter();
@@ -424,7 +424,6 @@ mainImg.onerror = () => {
   imgLoadingOverlay.style.display = 'none';
   imgErrorOverlay.style.display = 'flex';
   mainImg.style.opacity = '0';
-  // skip to next after a moment
   setTimeout(() => {
     if (images.length > 1) advance(1);
   }, 1200);
@@ -435,7 +434,6 @@ function advance(dir) {
   if (autoToggle.checked) restartAutoTimer();
 }
 
-// Auto-advance
 function startAutoTimer() {
   stopAutoTimer();
   progressBar.style.display = 'block';
@@ -477,14 +475,12 @@ autoToggle.addEventListener('change', () => {
 prevBtn.addEventListener('click', () => advance(-1));
 nextBtn.addEventListener('click', () => advance(1));
 
-// Keyboard nav
 document.addEventListener('keydown', e => {
   if (e.target === searchInput) return;
   if (e.key === 'ArrowLeft') advance(-1);
   if (e.key === 'ArrowRight') advance(1);
 });
 
-// Touch/swipe
 let touchStartX = null;
 imageDisplay.addEventListener('touchstart', e => {
   touchStartX = e.touches[0].clientX;
@@ -497,56 +493,60 @@ imageDisplay.addEventListener('touchend', e => {
   touchStartX = null;
 }, { passive: true });
 
-// Fetch images via DuckDuckGo (proxied through allorigins to bypass CORS)
 async function fetchImages(query) {
   showState('loading');
   stopAutoTimer();
   images = [];
 
   try {
-    // Step 1: Get vqd token from DDG search page
-    const tokenPageUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=images`;
-    const tokenResp = await fetch(PROXY + encodeURIComponent(tokenPageUrl));
-    if (!tokenResp.ok) throw new Error(`Proxy request failed (${tokenResp.status}) — check your connection`);
-    const tokenData = await tokenResp.json();
+    // Step 1: Search Wikimedia Commons for image files (namespace 6)
+    const searchParams = new URLSearchParams({
+      action: 'query',
+      list: 'search',
+      srsearch: query,
+      srnamespace: '6',
+      srlimit: '30',
+      format: 'json',
+      origin: '*',
+    });
+    const searchResp = await fetch(`${COMMONS_API}?${searchParams}`);
+    if (!searchResp.ok) throw new Error(`Search request failed (${searchResp.status})`);
+    const searchData = await searchResp.json();
 
-    if (tokenData.status && tokenData.status.http_code >= 400) {
-      throw new Error(`DuckDuckGo returned ${tokenData.status.http_code} — try again shortly`);
+    const files = (searchData.query && searchData.query.search) || [];
+    if (!files.length) throw new Error('No images found — try a different search term');
+
+    // Step 2: Get image URLs for all results in one batch request
+    const titles = files.map(f => f.title).join('|');
+    const infoParams = new URLSearchParams({
+      action: 'query',
+      titles,
+      prop: 'imageinfo',
+      iiprop: 'url|extmetadata',
+      iiurlwidth: '800',
+      format: 'json',
+      origin: '*',
+    });
+    const infoResp = await fetch(`${COMMONS_API}?${infoParams}`);
+    if (!infoResp.ok) throw new Error(`Image info request failed (${infoResp.status})`);
+    const infoData = await infoResp.json();
+
+    const pages = (infoData.query && infoData.query.pages) || {};
+    const results = [];
+
+    for (const page of Object.values(pages)) {
+      const info = page.imageinfo && page.imageinfo[0];
+      if (!info) continue;
+      const url = info.thumburl || info.url;
+      if (!url) continue;
+      // Strip "File:" prefix for caption
+      const title = (page.title || '').replace(/^File:/, '').replace(/_/g, ' ');
+      results.push({ url, title });
     }
 
-    const html = tokenData.contents || '';
-    if (!html) throw new Error('Empty response from proxy — DuckDuckGo may be unavailable');
+    if (!results.length) throw new Error('No usable images found — try a different search term');
 
-    // Extract vqd token — try multiple patterns DuckDuckGo has used
-    let vqd = null;
-    for (const pattern of [
-      /vqd=['"]([^'"]+)['"]/,
-      /vqd=([0-9][0-9\-a-zA-Z_]*)/,
-      /"vqd"\s*:\s*"([^"]+)"/,
-      /data-vqd="([^"]+)"/,
-    ]) {
-      const m = html.match(pattern);
-      if (m) { vqd = m[1]; break; }
-    }
-    if (!vqd) throw new Error('Could not find vqd token — DuckDuckGo may have changed their API');
-
-    // Step 2: Fetch image results
-    const apiEndpoint = `https://duckduckgo.com/i.js?q=${encodeURIComponent(query)}&vqd=${encodeURIComponent(vqd)}&o=json&l=us-en&p=1&s=0&u=bing&f=,,,`;
-    const apiResp = await fetch(PROXY + encodeURIComponent(apiEndpoint));
-    if (!apiResp.ok) throw new Error(`Image API request failed (${apiResp.status})`);
-    const apiData = await apiResp.json();
-
-    let parsed;
-    try {
-      parsed = JSON.parse(apiData.contents || '{}');
-    } catch (_) {
-      throw new Error('Failed to parse image results — unexpected response format');
-    }
-
-    const results = (parsed.results || []).filter(r => r && r.image);
-    if (!results.length) throw new Error('No images found — try a different search term');
-
-    images = results.slice(0, 50);
+    images = results;
     current = 0;
     showState('images');
     showImage(0);
@@ -569,7 +569,6 @@ function doSearch() {
 searchBtn.addEventListener('click', doSearch);
 searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
 
-// Init
 showState('placeholder');
 </script>
 </body>
