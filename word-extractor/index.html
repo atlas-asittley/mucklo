@@ -20,7 +20,7 @@ a.back { color: #555; font-size: 13px; text-decoration: none; align-self: flex-s
 a.back:hover { color: #16c79a; }
 h1 { font-size: 36px; color: #16c79a; margin-bottom: 8px; }
 .subtitle { color: #888; font-size: 14px; margin-bottom: 40px; }
-.container { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 20px; }
+.container { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 20px; }
 label { display: block; color: #aaa; font-size: 13px; margin-bottom: 6px; }
 textarea {
   width: 100%;
@@ -37,6 +37,14 @@ textarea {
   transition: border-color 0.2s;
 }
 textarea:focus { border-color: #16c79a; }
+.text-areas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 600px) {
+  .text-areas { grid-template-columns: 1fr; }
+}
 .row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
 .input-group { display: flex; flex-direction: column; }
 input[type="number"] {
@@ -52,6 +60,19 @@ input[type="number"] {
   transition: border-color 0.2s;
 }
 input[type="number"]:focus { border-color: #16c79a; }
+select {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  color: #eee;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+select:focus { border-color: #16c79a; }
 button {
   background: #16c79a;
   color: #1a1a2e;
@@ -92,19 +113,43 @@ button:hover { opacity: 0.85; }
   min-height: 18px;
 }
 .word-count { color: #555; font-size: 12px; margin-top: 4px; }
+.section-divider {
+  border: none;
+  border-top: 1px solid #0f3460;
+}
 </style>
 </head>
 <body>
 <a class="back" href="../">&larr; Back</a>
 <h1>Word Extractor</h1>
-<p class="subtitle">Extract every Nth word from a block of text</p>
+<p class="subtitle">Combine two texts, then extract every Nth word</p>
 
 <div class="container">
-  <div>
-    <label for="text-input">Paste your text</label>
-    <textarea id="text-input" placeholder="The quick brown fox jumps over the lazy dog..."></textarea>
-    <div class="word-count" id="word-count"></div>
+  <div class="text-areas">
+    <div>
+      <label for="text-a">Text A</label>
+      <textarea id="text-a" placeholder="The quick brown fox..."></textarea>
+      <div class="word-count" id="word-count-a"></div>
+    </div>
+    <div>
+      <label for="text-b">Text B</label>
+      <textarea id="text-b" placeholder="a lazy dog jumps..."></textarea>
+      <div class="word-count" id="word-count-b"></div>
+    </div>
   </div>
+
+  <div class="row">
+    <div class="input-group">
+      <label for="combine-mode">Combine mode</label>
+      <select id="combine-mode">
+        <option value="alternate">Alternate words (A, B, A, B...)</option>
+        <option value="a-then-b">A then B</option>
+        <option value="b-then-a">B then A</option>
+      </select>
+    </div>
+  </div>
+
+  <hr class="section-divider">
 
   <div class="row">
     <div class="input-group">
@@ -117,37 +162,62 @@ button:hover { opacity: 0.85; }
   <div class="error" id="error"></div>
 
   <div class="result-box" id="result-box">
+    <label>Result</label>
     <textarea class="output" id="output"></textarea>
   </div>
 </div>
 
 <script>
-const textInput = document.getElementById('text-input');
+const textA = document.getElementById('text-a');
+const textB = document.getElementById('text-b');
 const nInput = document.getElementById('n-input');
+const combineMode = document.getElementById('combine-mode');
 const resultBox = document.getElementById('result-box');
 const outputEl = document.getElementById('output');
 const errorEl = document.getElementById('error');
-const wordCountEl = document.getElementById('word-count');
-
-textInput.addEventListener('input', () => {
-  const words = getWords(textInput.value);
-  wordCountEl.textContent = words.length > 0 ? `${words.length} word${words.length !== 1 ? 's' : ''}` : '';
-  errorEl.textContent = '';
-});
 
 function getWords(text) {
   return text.trim().split(/\s+/).filter(w => w.length > 0);
+}
+
+function updateCount(textarea, countEl) {
+  const words = getWords(textarea.value);
+  countEl.textContent = words.length > 0 ? `${words.length} word${words.length !== 1 ? 's' : ''}` : '';
+}
+
+textA.addEventListener('input', () => {
+  updateCount(textA, document.getElementById('word-count-a'));
+  errorEl.textContent = '';
+});
+
+textB.addEventListener('input', () => {
+  updateCount(textB, document.getElementById('word-count-b'));
+  errorEl.textContent = '';
+});
+
+function combine(wordsA, wordsB, mode) {
+  if (mode === 'a-then-b') return [...wordsA, ...wordsB];
+  if (mode === 'b-then-a') return [...wordsB, ...wordsA];
+  // alternate
+  const result = [];
+  const len = Math.max(wordsA.length, wordsB.length);
+  for (let i = 0; i < len; i++) {
+    if (i < wordsA.length) result.push(wordsA[i]);
+    if (i < wordsB.length) result.push(wordsB[i]);
+  }
+  return result;
 }
 
 function extract() {
   errorEl.textContent = '';
   resultBox.classList.remove('visible');
 
-  const text = textInput.value.trim();
+  const a = textA.value.trim();
+  const b = textB.value.trim();
   const x = parseInt(nInput.value, 10);
 
-  if (!text) {
-    errorEl.textContent = 'Please enter some text.';
+  if (!a && !b) {
+    errorEl.textContent = 'Please enter text in at least one field.';
     return;
   }
 
@@ -156,26 +226,24 @@ function extract() {
     return;
   }
 
-  const words = getWords(text);
+  const wordsA = getWords(a);
+  const wordsB = getWords(b);
+  const words = combine(wordsA, wordsB, combineMode.value);
 
   if (x > words.length) {
-    errorEl.textContent = `X (${x}) is larger than the word count (${words.length}). No words extracted.`;
+    errorEl.textContent = `X (${x}) is larger than the combined word count (${words.length}). No words extracted.`;
     return;
   }
 
-  // Extract words at positions x, 2x, 3x, ... (1-indexed)
   const extracted = [];
-  const positions = [];
   for (let i = x; i <= words.length; i += x) {
     extracted.push(words[i - 1]);
-    positions.push(i);
   }
 
   outputEl.value = extracted.join(' ');
   resultBox.classList.add('visible');
 }
 
-// Allow Enter key on number input to trigger extract
 nInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') extract();
 });
