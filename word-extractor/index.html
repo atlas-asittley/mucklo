@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Extractor</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #1a1a2e;
+  color: #eee;
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+a.back { color: #555; font-size: 13px; text-decoration: none; align-self: flex-start; margin-bottom: 24px; }
+a.back:hover { color: #16c79a; }
+h1 { font-size: 36px; color: #16c79a; margin-bottom: 8px; }
+.subtitle { color: #888; font-size: 14px; margin-bottom: 40px; }
+.container { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 20px; }
+label { display: block; color: #aaa; font-size: 13px; margin-bottom: 6px; }
+textarea {
+  width: 100%;
+  height: 180px;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  color: #eee;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  padding: 12px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+textarea:focus { border-color: #16c79a; }
+.row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.input-group { display: flex; flex-direction: column; }
+input[type="number"] {
+  width: 120px;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  color: #eee;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input[type="number"]:focus { border-color: #16c79a; }
+button {
+  background: #16c79a;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+button:hover { opacity: 0.85; }
+.result-box {
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 6px;
+  padding: 20px;
+  min-height: 80px;
+  display: none;
+}
+.result-box.visible { display: block; }
+.positions {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 10px;
+}
+.output {
+  font-size: 16px;
+  color: #e94560;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.error {
+  color: #e94560;
+  font-size: 13px;
+  min-height: 18px;
+}
+.word-count { color: #555; font-size: 12px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<a class="back" href="../">&larr; Back</a>
+<h1>Word Extractor</h1>
+<p class="subtitle">Extract every Nth word from a block of text</p>
+
+<div class="container">
+  <div>
+    <label for="text-input">Paste your text</label>
+    <textarea id="text-input" placeholder="The quick brown fox jumps over the lazy dog..."></textarea>
+    <div class="word-count" id="word-count"></div>
+  </div>
+
+  <div class="row">
+    <div class="input-group">
+      <label for="n-input">Every Nth word (X)</label>
+      <input type="number" id="n-input" value="3" min="1" placeholder="3">
+    </div>
+    <button onclick="extract()">Extract</button>
+  </div>
+
+  <div class="error" id="error"></div>
+
+  <div class="result-box" id="result-box">
+    <div class="positions" id="positions"></div>
+    <div class="output" id="output"></div>
+  </div>
+</div>
+
+<script>
+const textInput = document.getElementById('text-input');
+const nInput = document.getElementById('n-input');
+const resultBox = document.getElementById('result-box');
+const outputEl = document.getElementById('output');
+const positionsEl = document.getElementById('positions');
+const errorEl = document.getElementById('error');
+const wordCountEl = document.getElementById('word-count');
+
+textInput.addEventListener('input', () => {
+  const words = getWords(textInput.value);
+  wordCountEl.textContent = words.length > 0 ? `${words.length} word${words.length !== 1 ? 's' : ''}` : '';
+  errorEl.textContent = '';
+});
+
+function getWords(text) {
+  return text.trim().split(/\s+/).filter(w => w.length > 0);
+}
+
+function extract() {
+  errorEl.textContent = '';
+  resultBox.classList.remove('visible');
+
+  const text = textInput.value.trim();
+  const x = parseInt(nInput.value, 10);
+
+  if (!text) {
+    errorEl.textContent = 'Please enter some text.';
+    return;
+  }
+
+  if (!x || x < 1) {
+    errorEl.textContent = 'X must be at least 1.';
+    return;
+  }
+
+  const words = getWords(text);
+
+  if (x > words.length) {
+    errorEl.textContent = `X (${x}) is larger than the word count (${words.length}). No words extracted.`;
+    return;
+  }
+
+  // Extract words at positions x, 2x, 3x, ... (1-indexed)
+  const extracted = [];
+  const positions = [];
+  for (let i = x; i <= words.length; i += x) {
+    extracted.push(words[i - 1]);
+    positions.push(i);
+  }
+
+  positionsEl.textContent = `Words at position${positions.length !== 1 ? 's' : ''}: ${positions.join(', ')}`;
+  outputEl.textContent = extracted.join(' ');
+  resultBox.classList.add('visible');
+}
+
+// Allow Enter key on number input to trigger extract
+nInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') extract();
+});
+</script>
+</body>
+</html>
