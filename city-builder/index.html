@@ -88,11 +88,31 @@ async function init(){
 
 async function loadPlayer(){
   const { data, error } = await supabase.from('players').select('*').eq('id', user.id).single();
-  if(error && error.code === '40604'){ // not found
-    const { error: insErr } = await supabase.from('players').insert({id:user.id,email:user.email,industry:null,budget:500,population:0});
-    if(insErr) console.error(insErr);
-    player = {budget:500,population:0,industry:null};
-  } else if(data){
+  if(error){
+    // PGRST116 = no rows found when using .single()
+    if(error.code === 'PGRST116'){
+      const { error: insErr } = await supabase.from('players').insert({
+        id: user.id,
+        email: user.email,
+        industry: null,
+        budget: 500,
+        population: 0
+      });
+      if(insErr){ console.error('Failed to create player:', insErr); return; }
+      player = { id: user.id, email: user.email, industry: null, budget: 500, population: 0 };
+
+      // Initialize inventory
+      await supabase.from('inventory').insert({ player_id: user.id, resources: {} });
+
+      // Initialize trade relationships
+      const partners = ['river_traders','desert_caravan','mountain_folk','coastal_merchants'];
+      for(const p of partners){
+        await supabase.from('trade_relationships').insert({ player_id: user.id, partner: p, relationship: 50 });
+      }
+    } else {
+      console.error('Error loading player:', error);
+    }
+  } else {
     player = data;
   }
 }
