@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit
 const GAME_VERSION = {
-  commit: '24d7299',
-  date: '2026-04-12 03:15 UTC',
-  message: 'Make word extractor output editable and remove positions label'
+  commit: '96f6c5f',
+  date: '2026-04-16 21:28 UTC',
+  message: 'Add Game Auth demo with Supabase email/password auth'
 };
