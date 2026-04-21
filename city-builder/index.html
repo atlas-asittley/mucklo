@@ -10,7 +10,13 @@ body{margin:0;background:#0d1117;color:#c9d1d9;font-family:Arial,Helvetica,sans-
 header{background:#161b22;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;}
 header h1{margin:0;font-size:1.5rem;color:#58a6ff;}
 #budget{font-weight:bold;}
-#main{flex:1;display:flex;overflow:hidden;}
+/* Auth overlay — visible by default, hidden once logged in */
+#auth-overlay{flex:1;display:flex;justify-content:center;align-items:center;}
+#auth-section{background:#161b22;border:1px solid #30363d;padding:30px;border-radius:8px;width:300px;}
+#auth-section h2{margin-top:0;}
+#auth-section input{display:block;width:100%;box-sizing:border-box;margin-bottom:8px;padding:6px;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;border-radius:4px;}
+/* Game UI — hidden until logged in */
+#main{flex:1;display:none;overflow:hidden;}
 #map{flex:2;background:#21262d;display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(15,1fr);gap:1px;}
 .tile{width:100%;height:0;padding-bottom:100%;position:relative;background:#30363d;cursor:pointer;}
 .tile.fog{background:#0d1117;}
@@ -19,10 +25,10 @@ header h1{margin:0;font-size:1.5rem;color:#58a6ff;}
 .tile span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.8rem;pointer-events:none;}
 #sidebar{flex:1;background:#161b22;padding:10px;overflow:auto;}
 section{margin-bottom:15px;}
-#auth-section{display:none;}
-#main.hidden{display:none;}
-#login-container{height:100vh;display:flex;align-items:center;justify-content:center;}
-#login-container.hidden{display:none;}
+/* Sidebar game sections — hidden until game starts */
+#industry-section{display:none;}
+#inventory{display:none;}
+#trade{display:none;}
 button{background:#58a6ff;color:#0d1117;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;}
 button:disabled{opacity:0.5;cursor:not-allowed;}
 .progress{background:#30363d;width:100%;height:10px;border-radius:5px;overflow:hidden;margin-top:5px;}
@@ -32,85 +38,86 @@ button:disabled{opacity:0.5;cursor:not-allowed;}
 <body>
 <header>
   <h1>City Builder</h1>
-  <div id="user-info">Budget: $<span id="budget">0</span> | Population: <span id="population">0</span> <button id="logout">Log Out</button></div>
+  <div id="user-info" style="display:none;">Budget: $<span id="budget">0</span> | Population: <span id="population">0</span> <button id="logout">Log Out</button></div>
 </header>
-<div id="login-container" class="hidden">
-    <div style="background:#161b22;padding:40px;border-radius:8px;max-width:350px;width:100%;">
-      <h2 style="margin-top:0;color:#58a6ff;">City Builder</h2>
-      <p style="color:#aaa;margin-bottom:20px;">Login or create an account to start building</p>
-      <div id="error" style="color:#f85149;display:none;margin-bottom:10px;"></div>
-      <input type="email" id="email" placeholder="Email" style="width:100%;margin-bottom:10px;padding:8px;border-radius:4px;border:1px solid #30363d;background:#0d1117;color:#c9d1d9;box-sizing:box-sizing;border-box;" />
-      <input type="password" id="password" placeholder="Password" style="width:100%;margin-bottom:10px;padding:8px;border-radius:4px;border:1px solid #30363d;background:#0d1117;color:#c9d1d9;box-sizing:box-sizing;border-box;" />
-      <button id="login-btn" style="width:100%;margin-bottom:8px;padding:10px;font-size:1rem;">Log In</button>
-      <button id="register-btn" style="width:100%;padding:10px;font-size:1rem;">Create Account</button>
-    </div>
-  </div>
-  <div id="main" class="hidden">
+
+<!-- Auth overlay — shown when not logged in -->
+<div id="auth-overlay">
+  <section id="auth-section">
+    <h2>Login / Register</h2>
+    <div id="error" style="color:#f85149;display:none;"></div>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="login-btn">Log In</button>
+    <button id="register-btn" style="margin-left:5px;">Register</button>
+  </section>
+</div>
+
+<!-- Game UI — shown once logged in -->
+<div id="main">
   <div id="map"></div>
   <div id="sidebar">
-    <section id="auth-section">
-      <h2>Login / Register</h2>
-      <div id="error" style="color:#f85149;display:none;"></div>
-      <input type="email" id="email" placeholder="Email" style="width:100%;margin-bottom:5px;" />
-      <input type="password" id="password" placeholder="Password" style="width:100%;margin-bottom:5px;" />
-      <button id="login-btn">Log In</button>
-      <button id="register-btn">Register</button>
-    </section>
-    <section id="industry-section" style="display:none;">
+    <section id="industry-section">
       <h2>Select Industry</h2>
       <div id="industry-options"></div>
     </section>
-    <section id="inventory" style="display:none;">
+    <section id="inventory">
       <h2>Inventory</h2>
       <ul id="inv-list"></ul>
     </section>
-    <section id="trade" style="display:none;">
+    <section id="trade">
       <h2>Trade Partners</h2>
       <div id="partners"></div>
     </section>
   </div>
 </div>
+
 <script>
-// Supabase client
-const supabase = supabase.createClient('https://igaulapupbtdcqqjobhs.supabase.co','sb_publishable_7yi3BNg-J-K5nralw5JSww_c71Pge6e');
+// Fix: use window.supabase to avoid `const supabase` TDZ shadowing the CDN global
+const supabase = window.supabase.createClient(
+  'https://igaulapupbtdcqqjobhs.supabase.co',
+  'sb_publishable_7yi3BNg-J-K5nralw5JSww_c71Pge6e'
+);
 let user = null;
 let player = null;
 const budgetEl = document.getElementById('budget');
 const popEl = document.getElementById('population');
 
 // UI refs
-const authSection = document.getElementById('auth-section');
+const authOverlay = document.getElementById('auth-overlay');
+const mainEl = document.getElementById('main');
 const industrySection = document.getElementById('industry-section');
 const inventorySection = document.getElementById('inventory');
 const tradeSection = document.getElementById('trade');
 const mapEl = document.getElementById('map');
 const errorEl = document.getElementById('error');
-const loginContainer = document.getElementById('login-container');
-const mainDiv = document.getElementById('main');
 
 // Helpers
 function showError(msg){errorEl.textContent = msg; errorEl.style.display='block';}
 function clearError(){errorEl.style.display='none';}
 
 async function init(){
-  const { data: { session } } = await supabase.auth.getSession();
-  if(session && session.user){
-    loginContainer.classList.add('hidden');
-    mainDiv.classList.remove('hidden');
-    user = session.user;
-    await loadPlayer();
-    showGameUI();
-  } else {
-    loginContainer.classList.remove('hidden');
-    mainDiv.classList.add('hidden');
-    authSection.style.display='block';
+  console.log('Init started');
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    console.log('Session:', session, 'Error:', error);
+    if(session && session.user){
+      user = session.user;
+      await loadPlayer();
+      showGameUI();
+    } else {
+      console.log('No session — showing auth');
+      // auth-overlay already visible by default CSS
+    }
+  } catch(e) {
+    console.error('Init error:', e);
+    // auth-overlay stays visible on error
   }
 }
 
 async function loadPlayer(){
   const { data, error } = await supabase.from('players').select('*').eq('id', user.id).single();
   if(error){
-    // PGRST116 = no rows found when using .single()
     if(error.code === 'PGRST116'){
       const { error: insErr } = await supabase.from('players').insert({
         id: user.id,
@@ -121,11 +128,7 @@ async function loadPlayer(){
       });
       if(insErr){ console.error('Failed to create player:', insErr); return; }
       player = { id: user.id, email: user.email, industry: null, budget: 500, population: 0 };
-
-      // Initialize inventory
       await supabase.from('inventory').insert({ player_id: user.id, resources: {} });
-
-      // Initialize trade relationships
       const partners = ['river_traders','desert_caravan','mountain_folk','coastal_merchants'];
       for(const p of partners){
         await supabase.from('trade_relationships').insert({ player_id: user.id, partner: p, relationship: 50 });
@@ -139,10 +142,11 @@ async function loadPlayer(){
 }
 
 function showGameUI(){
-  authSection.style.display='none';
+  authOverlay.style.display='none';
+  mainEl.style.display='flex';
   document.getElementById('user-info').style.display='block';
   budgetEl.textContent = player.budget;
-  popEl.textContent = player.population;
+  popEl.textContent = player.population || 0;
   if(!player.industry){
     showIndustrySelection();
   } else {
@@ -158,6 +162,8 @@ function showIndustrySelection(){
   options.forEach(ind => {
     const btn=document.createElement('button');
     btn.textContent=ind;
+    btn.style.marginRight='5px';
+    btn.style.marginBottom='5px';
     btn.onclick=()=>selectIndustry(ind);
     container.appendChild(btn);
   });
@@ -178,14 +184,13 @@ async function startGame(){
   renderMap();
   loadInventory();
   loadPartners();
-  // Game loop
   setInterval(gameTick,1000);
 }
 
 async function generateMapIfNeeded(){
   const {count, error} = await supabase.from('tiles').select('id', {count:'exact'});
   if(error) {console.error(error);return;}
-  if(count===225) return; // already generated 15x15
+  if(count===225) return;
   const resources=['clay','timber','stone','iron','corn'];
   const inserts=[];
   for(let y=0;y<15;y++){
@@ -216,57 +221,44 @@ async function renderMap(){
 }
 
 async function handleTileClick(tile){
-  // reveal fog
   if(tile.fog){
     await supabase.from('tiles').update({fog:false}).eq('x',tile.x).eq('y',tile.y);
     tile.fog=false;
     renderMap();
     return;
   }
-  // build extraction if eligible
-  if(!tile.resource) return; // not a resource
-  if(tile.building_id) return; // already built
+  if(!tile.resource) return;
+  if(tile.building_id) return;
   if(player.budget < 100) {showError('Insufficient funds');return;}
-  // Create building
   const {data, error}=await supabase.from('buildings').insert({player_id:user.id,type:'extraction',tier:1,resource:tile.resource,tile_x:tile.x,tile_y:tile.y});
   if(error){showError('Build failed');return;}
-  // deduct budget
   const newBudget = player.budget - 100;
   await supabase.from('players').update({budget:newBudget}).eq('id',user.id);
   player.budget = newBudget;
   budgetEl.textContent = newBudget;
-  // link building to tile
   const buildingId = data[0].id;
   await supabase.from('tiles').update({building_id:buildingId}).eq('x',tile.x).eq('y',tile.y);
   renderMap();
 }
 
 async function gameTick(){
-  // Process all buildings of this player
   const {data: buildings, error}=await supabase.from('buildings').select('*').eq('player_id',user.id);
   if(error){console.error(error);return;}
   for(const b of buildings){
-    // Add resource to inventory
-    const qty = 1; // simple production per tick
-    const invRes = {};
-    invRes[`resources->>${b.resource}`]=`(${b.resource})`;
-    // We'll fetch inventory then update jsonb
     const {data: inv} = await supabase.from('inventory').select('resources').eq('player_id',user.id).single();
     let resources = inv ? inv.resources : {clay:0,timber:0,stone:0,iron:0,corn:0};
-    resources[b.resource] = (resources[b.resource]||0)+qty;
+    resources[b.resource] = (resources[b.resource]||0)+1;
     await supabase.from('inventory').upsert({player_id:user.id,resources});
-    // increase population
-    const newPop = player.population + 1;
+    const newPop = (player.population||0) + 1;
     await supabase.from('players').update({population:newPop}).eq('id',user.id);
     player.population = newPop;
     popEl.textContent = newPop;
   }
   loadInventory();
-  // Simple resource generation for all players? Skipped for MVP.
 }
 
 async function loadInventory(){
-  const {data, error}=await supabase.from('inventory').select('resources').eq('player_id',user.id).single();
+  const {data}=await supabase.from('inventory').select('resources').eq('player_id',user.id).single();
   const list=document.getElementById('inv-list');
   list.innerHTML='';
   const res = data ? data.resources : {clay:0,timber:0,stone:0,iron:0,corn:0};
@@ -302,41 +294,38 @@ function loadPartners(){
 
 // Auth handlers
 document.getElementById('login-btn').onclick=async()=>{
+  console.log('Login clicked');
   clearError();
   const email=document.getElementById('email').value;
   const pass=document.getElementById('password').value;
-  if(!email || !pass){showError('Please enter email and password');return;}
+  if(!email||!pass){showError('Email and password required');return;}
   const {error}=await supabase.auth.signInWithPassword({email,password:pass});
   if(error){showError(error.message);return;}
   const {data}=await supabase.auth.getSession();
   user=data.session.user;
   await loadPlayer();
-  loginContainer.classList.add('hidden');
-  mainDiv.classList.remove('hidden');
   showGameUI();
 };
+
 document.getElementById('register-btn').onclick=async()=>{
+  console.log('Register clicked');
   clearError();
   const email=document.getElementById('email').value;
   const pass=document.getElementById('password').value;
-  if(!email || !pass){showError('Please enter email and password');return;}
-  if(pass.length < 6){showError('Password must be at least 6 characters');return;}
+  if(!email||!pass){showError('Email and password required');return;}
   const {error}=await supabase.auth.signUp({email,password:pass});
   if(error){showError(error.message);return;}
-  // Auto login after sign‑up
   const {error:loginErr}=await supabase.auth.signInWithPassword({email,password:pass});
   if(loginErr){showError(loginErr.message);return;}
   const {data}=await supabase.auth.getSession();
   user=data.session.user;
   await loadPlayer();
-  loginContainer.classList.add('hidden');
-  mainDiv.classList.remove('hidden');
   showGameUI();
 };
+
 document.getElementById('logout').onclick=async()=>{
   await supabase.auth.signOut();
-  loginContainer.classList.remove('hidden');
-  mainDiv.classList.add('hidden');
+  location.reload();
 };
 
 init();
