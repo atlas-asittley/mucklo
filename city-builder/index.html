@@ -174,6 +174,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function showGameUI(){
+    alert('SHOWGAMEUI CALLED - player:' + (player ? player.industry : 'null'));
+    log('showGameUI called, player:' + JSON.stringify(player));
     authOverlay.style.display='none';
     mainEl.style.display='flex';
     document.getElementById('user-info').style.display='block';
