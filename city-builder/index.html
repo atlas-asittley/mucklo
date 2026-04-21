@@ -73,262 +73,289 @@ button:disabled{opacity:0.5;cursor:not-allowed;}
 </div>
 
 <script>
-// Fix: use window.supabase to avoid `const supabase` TDZ shadowing the CDN global
-const supabase = window.supabase.createClient(
-  'https://igaulapupbtdcqqjobhs.supabase.co',
-  'sb_publishable_7yi3BNg-J-K5nralw5JSww_c71Pge6e'
-);
-let user = null;
-let player = null;
-const budgetEl = document.getElementById('budget');
-const popEl = document.getElementById('population');
+// Global error handler — catches JS errors before DOMContentLoaded
+window.addEventListener('error', (e) => {
+  console.error('JS Error:', e.message, e.filename, e.lineno);
+  const el = document.getElementById('error');
+  if (el) { el.textContent = 'JS Error: ' + e.message; el.style.display = 'block'; }
+});
 
-// UI refs
-const authOverlay = document.getElementById('auth-overlay');
-const mainEl = document.getElementById('main');
-const industrySection = document.getElementById('industry-section');
-const inventorySection = document.getElementById('inventory');
-const tradeSection = document.getElementById('trade');
-const mapEl = document.getElementById('map');
-const errorEl = document.getElementById('error');
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('DOMContentLoaded fired');
 
-// Helpers
-function showError(msg){errorEl.textContent = msg; errorEl.style.display='block';}
-function clearError(){errorEl.style.display='none';}
-
-async function init(){
-  console.log('Init started');
-  try {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    console.log('Session:', session, 'Error:', error);
-    if(session && session.user){
-      user = session.user;
-      await loadPlayer();
-      showGameUI();
-    } else {
-      console.log('No session — showing auth');
-      // auth-overlay already visible by default CSS
-    }
-  } catch(e) {
-    console.error('Init error:', e);
-    // auth-overlay stays visible on error
-  }
-}
-
-async function loadPlayer(){
-  const { data, error } = await supabase.from('players').select('*').eq('id', user.id).single();
-  if(error){
-    if(error.code === 'PGRST116'){
-      const { error: insErr } = await supabase.from('players').insert({
-        id: user.id,
-        email: user.email,
-        industry: null,
-        budget: 500,
-        population: 0
-      });
-      if(insErr){ console.error('Failed to create player:', insErr); return; }
-      player = { id: user.id, email: user.email, industry: null, budget: 500, population: 0 };
-      await supabase.from('inventory').insert({ player_id: user.id, resources: {} });
-      const partners = ['river_traders','desert_caravan','mountain_folk','coastal_merchants'];
-      for(const p of partners){
-        await supabase.from('trade_relationships').insert({ player_id: user.id, partner: p, relationship: 50 });
-      }
-    } else {
-      console.error('Error loading player:', error);
-    }
-  } else {
-    player = data;
-  }
-}
-
-function showGameUI(){
-  authOverlay.style.display='none';
-  mainEl.style.display='flex';
-  document.getElementById('user-info').style.display='block';
-  budgetEl.textContent = player.budget;
-  popEl.textContent = player.population || 0;
-  if(!player.industry){
-    showIndustrySelection();
-  } else {
-    startGame();
-  }
-}
-
-function showIndustrySelection(){
-  industrySection.style.display='block';
-  const options = ['Clay','Timber','Stone','Iron','Corn'];
-  const container = document.getElementById('industry-options');
-  container.innerHTML='';
-  options.forEach(ind => {
-    const btn=document.createElement('button');
-    btn.textContent=ind;
-    btn.style.marginRight='5px';
-    btn.style.marginBottom='5px';
-    btn.onclick=()=>selectIndustry(ind);
-    container.appendChild(btn);
-  });
-}
-
-async function selectIndustry(ind){
-  const {error}=await supabase.from('players').update({industry:ind}).eq('id',user.id);
-  if(error){showError('Failed to set industry');return;}
-  player.industry=ind;
-  industrySection.style.display='none';
-  startGame();
-}
-
-async function startGame(){
-  inventorySection.style.display='block';
-  tradeSection.style.display='block';
-  await generateMapIfNeeded();
-  renderMap();
-  loadInventory();
-  loadPartners();
-  setInterval(gameTick,1000);
-}
-
-async function generateMapIfNeeded(){
-  const {count, error} = await supabase.from('tiles').select('id', {count:'exact'});
-  if(error) {console.error(error);return;}
-  if(count===225) return;
-  const resources=['clay','timber','stone','iron','corn'];
-  const inserts=[];
-  for(let y=0;y<15;y++){
-    for(let x=0;x<15;x++){
-      const res = Math.random()<0.3 ? resources[Math.floor(Math.random()*resources.length)] : null;
-      inserts.push({x,y,resource:res,fog:true});
-    }
-  }
-  const {error:insErr}=await supabase.from('tiles').insert(inserts);
-  if(insErr) console.error(insErr);
-}
-
-async function renderMap(){
-  const {data, error}=await supabase.from('tiles').select('*');
-  if(error){console.error(error);return;}
-  mapEl.innerHTML='';
-  data.forEach(tile=>{
-    const div=document.createElement('div');
-    div.className='tile';
-    if(tile.fog) div.classList.add('fog');
-    if(tile.resource) div.classList.add('resource');
-    if(tile.building_id) div.classList.add('building');
-    div.dataset.x=tile.x; div.dataset.y=tile.y;
-    if(tile.resource) div.innerHTML='<span>'+tile.resource[0].toUpperCase()+'</span>';
-    div.onclick=()=>handleTileClick(tile);
-    mapEl.appendChild(div);
-  });
-}
-
-async function handleTileClick(tile){
-  if(tile.fog){
-    await supabase.from('tiles').update({fog:false}).eq('x',tile.x).eq('y',tile.y);
-    tile.fog=false;
-    renderMap();
+  // Verify Supabase CDN loaded
+  if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+    const el = document.getElementById('error');
+    if (el) { el.textContent = 'Failed to load Supabase library. Check network connection.'; el.style.display = 'block'; }
+    console.error('Supabase CDN not loaded — window.supabase:', window.supabase);
     return;
   }
-  if(!tile.resource) return;
-  if(tile.building_id) return;
-  if(player.budget < 100) {showError('Insufficient funds');return;}
-  const {data, error}=await supabase.from('buildings').insert({player_id:user.id,type:'extraction',tier:1,resource:tile.resource,tile_x:tile.x,tile_y:tile.y});
-  if(error){showError('Build failed');return;}
-  const newBudget = player.budget - 100;
-  await supabase.from('players').update({budget:newBudget}).eq('id',user.id);
-  player.budget = newBudget;
-  budgetEl.textContent = newBudget;
-  const buildingId = data[0].id;
-  await supabase.from('tiles').update({building_id:buildingId}).eq('x',tile.x).eq('y',tile.y);
-  renderMap();
-}
+  console.log('Supabase CDN loaded OK');
 
-async function gameTick(){
-  const {data: buildings, error}=await supabase.from('buildings').select('*').eq('player_id',user.id);
-  if(error){console.error(error);return;}
-  for(const b of buildings){
-    const {data: inv} = await supabase.from('inventory').select('resources').eq('player_id',user.id).single();
-    let resources = inv ? inv.resources : {clay:0,timber:0,stone:0,iron:0,corn:0};
-    resources[b.resource] = (resources[b.resource]||0)+1;
-    await supabase.from('inventory').upsert({player_id:user.id,resources});
-    const newPop = (player.population||0) + 1;
-    await supabase.from('players').update({population:newPop}).eq('id',user.id);
-    player.population = newPop;
-    popEl.textContent = newPop;
+  // Use a local variable name to avoid shadowing the CDN global
+  const sb = window.supabase.createClient(
+    'https://igaulapupbtdcqqjobhs.supabase.co',
+    'sb_publishable_7yi3BNg-J-K5nralw5JSww_c71Pge6e'
+  );
+  console.log('Supabase client created:', sb);
+
+  let user = null;
+  let player = null;
+  const budgetEl = document.getElementById('budget');
+  const popEl = document.getElementById('population');
+
+  // UI refs
+  const authOverlay = document.getElementById('auth-overlay');
+  const mainEl = document.getElementById('main');
+  const industrySection = document.getElementById('industry-section');
+  const inventorySection = document.getElementById('inventory');
+  const tradeSection = document.getElementById('trade');
+  const mapEl = document.getElementById('map');
+  const errorEl = document.getElementById('error');
+
+  // Helpers
+  function showError(msg){ console.error('showError:', msg); errorEl.textContent = msg; errorEl.style.display='block'; }
+  function clearError(){ errorEl.style.display='none'; }
+
+  async function init(){
+    console.log('Init started');
+    try {
+      const { data: { session }, error } = await sb.auth.getSession();
+      console.log('Session:', session, 'Error:', error);
+      if(session && session.user){
+        user = session.user;
+        await loadPlayer();
+        showGameUI();
+      } else {
+        console.log('No session — showing auth');
+        // auth-overlay already visible by default CSS
+      }
+    } catch(e) {
+      console.error('Init error:', e);
+      // auth-overlay stays visible on error
+    }
   }
-  loadInventory();
-}
 
-async function loadInventory(){
-  const {data}=await supabase.from('inventory').select('resources').eq('player_id',user.id).single();
-  const list=document.getElementById('inv-list');
-  list.innerHTML='';
-  const res = data ? data.resources : {clay:0,timber:0,stone:0,iron:0,corn:0};
-  for(const [k,v] of Object.entries(res)){
-    const li=document.createElement('li');
-    li.textContent=`${k}: ${v}`;
-    list.appendChild(li);
+  async function loadPlayer(){
+    const { data, error } = await sb.from('players').select('*').eq('id', user.id).single();
+    if(error){
+      if(error.code === 'PGRST116'){
+        const { error: insErr } = await sb.from('players').insert({
+          id: user.id,
+          email: user.email,
+          industry: null,
+          budget: 500,
+          population: 0
+        });
+        if(insErr){ console.error('Failed to create player:', insErr); return; }
+        player = { id: user.id, email: user.email, industry: null, budget: 500, population: 0 };
+        await sb.from('inventory').insert({ player_id: user.id, resources: {} });
+        const partners = ['river_traders','desert_caravan','mountain_folk','coastal_merchants'];
+        for(const p of partners){
+          await sb.from('trade_relationships').insert({ player_id: user.id, partner: p, relationship: 50 });
+        }
+      } else {
+        console.error('Error loading player:', error);
+      }
+    } else {
+      player = data;
+    }
   }
-}
 
-function loadPartners(){
-  const partners = ['River Traders','Desert Caravan','Mountain Folk','Coastal Merch'];
-  const container=document.getElementById('partners');
-  container.innerHTML='';
-  partners.forEach(p=>{
-    const div=document.createElement('div');
-    div.style.marginBottom='10px';
-    const name=document.createElement('div');name.textContent=p;div.appendChild(name);
-    const prog=document.createElement('div');prog.className='progress';
-    const bar=document.createElement('div');bar.style.width='50%';prog.appendChild(bar);
-    div.appendChild(prog);
-    const btn=document.createElement('button');btn.textContent='Gift $10';
-    btn.onclick=async()=>{
-      if(player.budget<10) return showError('Not enough money for gift');
-      const newBud=player.budget-10;
-      await supabase.from('players').update({budget:newBud}).eq('id',user.id);
-      player.budget=newBud;budgetEl.textContent=newBud;
-    };
-    div.appendChild(btn);
-    container.appendChild(div);
+  function showGameUI(){
+    authOverlay.style.display='none';
+    mainEl.style.display='flex';
+    document.getElementById('user-info').style.display='block';
+    budgetEl.textContent = player.budget;
+    popEl.textContent = player.population || 0;
+    if(!player.industry){
+      showIndustrySelection();
+    } else {
+      startGame();
+    }
+  }
+
+  function showIndustrySelection(){
+    industrySection.style.display='block';
+    const options = ['Clay','Timber','Stone','Iron','Corn'];
+    const container = document.getElementById('industry-options');
+    container.innerHTML='';
+    options.forEach(ind => {
+      const btn=document.createElement('button');
+      btn.textContent=ind;
+      btn.style.marginRight='5px';
+      btn.style.marginBottom='5px';
+      btn.addEventListener('click', ()=>selectIndustry(ind));
+      container.appendChild(btn);
+    });
+  }
+
+  async function selectIndustry(ind){
+    const {error}=await sb.from('players').update({industry:ind}).eq('id',user.id);
+    if(error){showError('Failed to set industry');return;}
+    player.industry=ind;
+    industrySection.style.display='none';
+    startGame();
+  }
+
+  async function startGame(){
+    inventorySection.style.display='block';
+    tradeSection.style.display='block';
+    await generateMapIfNeeded();
+    renderMap();
+    loadInventory();
+    loadPartners();
+    setInterval(gameTick,1000);
+  }
+
+  async function generateMapIfNeeded(){
+    const {count, error} = await sb.from('tiles').select('id', {count:'exact'});
+    if(error) {console.error(error);return;}
+    if(count===225) return;
+    const resources=['clay','timber','stone','iron','corn'];
+    const inserts=[];
+    for(let y=0;y<15;y++){
+      for(let x=0;x<15;x++){
+        const res = Math.random()<0.3 ? resources[Math.floor(Math.random()*resources.length)] : null;
+        inserts.push({x,y,resource:res,fog:true});
+      }
+    }
+    const {error:insErr}=await sb.from('tiles').insert(inserts);
+    if(insErr) console.error(insErr);
+  }
+
+  async function renderMap(){
+    const {data, error}=await sb.from('tiles').select('*');
+    if(error){console.error(error);return;}
+    mapEl.innerHTML='';
+    data.forEach(tile=>{
+      const div=document.createElement('div');
+      div.className='tile';
+      if(tile.fog) div.classList.add('fog');
+      if(tile.resource) div.classList.add('resource');
+      if(tile.building_id) div.classList.add('building');
+      div.dataset.x=tile.x; div.dataset.y=tile.y;
+      if(tile.resource) div.innerHTML='<span>'+tile.resource[0].toUpperCase()+'</span>';
+      div.addEventListener('click', ()=>handleTileClick(tile));
+      mapEl.appendChild(div);
+    });
+  }
+
+  async function handleTileClick(tile){
+    if(tile.fog){
+      await sb.from('tiles').update({fog:false}).eq('x',tile.x).eq('y',tile.y);
+      tile.fog=false;
+      renderMap();
+      return;
+    }
+    if(!tile.resource) return;
+    if(tile.building_id) return;
+    if(player.budget < 100) {showError('Insufficient funds');return;}
+    const {data, error}=await sb.from('buildings').insert({player_id:user.id,type:'extraction',tier:1,resource:tile.resource,tile_x:tile.x,tile_y:tile.y});
+    if(error){showError('Build failed');return;}
+    const newBudget = player.budget - 100;
+    await sb.from('players').update({budget:newBudget}).eq('id',user.id);
+    player.budget = newBudget;
+    budgetEl.textContent = newBudget;
+    const buildingId = data[0].id;
+    await sb.from('tiles').update({building_id:buildingId}).eq('x',tile.x).eq('y',tile.y);
+    renderMap();
+  }
+
+  async function gameTick(){
+    const {data: buildings, error}=await sb.from('buildings').select('*').eq('player_id',user.id);
+    if(error){console.error(error);return;}
+    for(const b of buildings){
+      const {data: inv} = await sb.from('inventory').select('resources').eq('player_id',user.id).single();
+      let resources = inv ? inv.resources : {clay:0,timber:0,stone:0,iron:0,corn:0};
+      resources[b.resource] = (resources[b.resource]||0)+1;
+      await sb.from('inventory').upsert({player_id:user.id,resources});
+      const newPop = (player.population||0) + 1;
+      await sb.from('players').update({population:newPop}).eq('id',user.id);
+      player.population = newPop;
+      popEl.textContent = newPop;
+    }
+    loadInventory();
+  }
+
+  async function loadInventory(){
+    const {data}=await sb.from('inventory').select('resources').eq('player_id',user.id).single();
+    const list=document.getElementById('inv-list');
+    list.innerHTML='';
+    const res = data ? data.resources : {clay:0,timber:0,stone:0,iron:0,corn:0};
+    for(const [k,v] of Object.entries(res)){
+      const li=document.createElement('li');
+      li.textContent=`${k}: ${v}`;
+      list.appendChild(li);
+    }
+  }
+
+  function loadPartners(){
+    const partners = ['River Traders','Desert Caravan','Mountain Folk','Coastal Merch'];
+    const container=document.getElementById('partners');
+    container.innerHTML='';
+    partners.forEach(p=>{
+      const div=document.createElement('div');
+      div.style.marginBottom='10px';
+      const name=document.createElement('div');name.textContent=p;div.appendChild(name);
+      const prog=document.createElement('div');prog.className='progress';
+      const bar=document.createElement('div');bar.style.width='50%';prog.appendChild(bar);
+      div.appendChild(prog);
+      const btn=document.createElement('button');btn.textContent='Gift $10';
+      btn.addEventListener('click', async()=>{
+        if(player.budget<10) return showError('Not enough money for gift');
+        const newBud=player.budget-10;
+        await sb.from('players').update({budget:newBud}).eq('id',user.id);
+        player.budget=newBud;budgetEl.textContent=newBud;
+      });
+      div.appendChild(btn);
+      container.appendChild(div);
+    });
+  }
+
+  // Auth handlers — using addEventListener so attachment failures surface clearly
+  const loginBtn = document.getElementById('login-btn');
+  const registerBtn = document.getElementById('register-btn');
+  const logoutBtn = document.getElementById('logout');
+  console.log('Auth buttons:', loginBtn, registerBtn, logoutBtn);
+
+  loginBtn.addEventListener('click', async () => {
+    console.log('Login clicked');
+    clearError();
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value;
+    if(!email||!pass){ showError('Email and password required'); return; }
+    const {error} = await sb.auth.signInWithPassword({email, password: pass});
+    if(error){ showError(error.message); return; }
+    const {data} = await sb.auth.getSession();
+    user = data.session.user;
+    await loadPlayer();
+    showGameUI();
   });
-}
 
-// Auth handlers
-document.getElementById('login-btn').onclick=async()=>{
-  console.log('Login clicked');
-  clearError();
-  const email=document.getElementById('email').value;
-  const pass=document.getElementById('password').value;
-  if(!email||!pass){showError('Email and password required');return;}
-  const {error}=await supabase.auth.signInWithPassword({email,password:pass});
-  if(error){showError(error.message);return;}
-  const {data}=await supabase.auth.getSession();
-  user=data.session.user;
-  await loadPlayer();
-  showGameUI();
-};
+  registerBtn.addEventListener('click', async () => {
+    console.log('Register clicked');
+    clearError();
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value;
+    if(!email||!pass){ showError('Email and password required'); return; }
+    const {error} = await sb.auth.signUp({email, password: pass});
+    if(error){ showError(error.message); return; }
+    const {error: loginErr} = await sb.auth.signInWithPassword({email, password: pass});
+    if(loginErr){ showError(loginErr.message); return; }
+    const {data} = await sb.auth.getSession();
+    user = data.session.user;
+    await loadPlayer();
+    showGameUI();
+  });
 
-document.getElementById('register-btn').onclick=async()=>{
-  console.log('Register clicked');
-  clearError();
-  const email=document.getElementById('email').value;
-  const pass=document.getElementById('password').value;
-  if(!email||!pass){showError('Email and password required');return;}
-  const {error}=await supabase.auth.signUp({email,password:pass});
-  if(error){showError(error.message);return;}
-  const {error:loginErr}=await supabase.auth.signInWithPassword({email,password:pass});
-  if(loginErr){showError(loginErr.message);return;}
-  const {data}=await supabase.auth.getSession();
-  user=data.session.user;
-  await loadPlayer();
-  showGameUI();
-};
+  logoutBtn.addEventListener('click', async () => {
+    await sb.auth.signOut();
+    location.reload();
+  });
 
-document.getElementById('logout').onclick=async()=>{
-  await supabase.auth.signOut();
-  location.reload();
-};
-
-init();
+  init();
+}); // end DOMContentLoaded
 </script>
 </body>
 </html>
