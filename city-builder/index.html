@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log('Supabase CDN loaded OK');
 
   // Use a local variable name to avoid shadowing the CDN global
-  const sb = window.supabase.createClient(
+  const supabase = window.supabase.createClient(
     'https://igaulapupbtdcqqjobhs.supabase.co',
     'sb_publishable_7yi3BNg-J-K5nralw5JSww_c71Pge6e'
   );
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function init(){
     console.log('Init started');
     try {
-      const { data: { session }, error } = await sb.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
       console.log('Session:', session, 'Error:', error);
       if(session && session.user){
         user = session.user;
@@ -137,10 +137,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function loadPlayer(){
-    const { data, error } = await sb.from('players').select('*').eq('id', user.id).single();
+    const { data, error } = await supabase.from('players').select('*').eq('id', user.id).single();
     if(error){
       if(error.code === 'PGRST116'){
-        const { error: insErr } = await sb.from('players').insert({
+        const { error: insErr } = await supabase.from('players').insert({
           id: user.id,
           email: user.email,
           industry: null,
@@ -149,10 +149,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         if(insErr){ console.error('Failed to create player:', insErr); return; }
         player = { id: user.id, email: user.email, industry: null, budget: 500, population: 0 };
-        await sb.from('inventory').insert({ player_id: user.id, resources: {} });
+        await supabase.from('inventory').insert({ player_id: user.id, resources: {} });
         const partners = ['river_traders','desert_caravan','mountain_folk','coastal_merchants'];
         for(const p of partners){
-          await sb.from('trade_relationships').insert({ player_id: user.id, partner: p, relationship: 50 });
+          await supabase.from('trade_relationships').insert({ player_id: user.id, partner: p, relationship: 50 });
         }
       } else {
         console.error('Error loading player:', error);
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function selectIndustry(ind){
-    const {error}=await sb.from('players').update({industry:ind}).eq('id',user.id);
+    const {error}=await supabase.from('players').update({industry:ind}).eq('id',user.id);
     if(error){showError('Failed to set industry');return;}
     player.industry=ind;
     industrySection.style.display='none';
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function generateMapIfNeeded(){
-    const {count, error} = await sb.from('tiles').select('id', {count:'exact'});
+    const {count, error} = await supabase.from('tiles').select('id', {count:'exact'});
     if(error) {console.error(error);return;}
     if(count===225) return;
     const resources=['clay','timber','stone','iron','corn'];
@@ -220,12 +220,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         inserts.push({x,y,resource:res,fog:true});
       }
     }
-    const {error:insErr}=await sb.from('tiles').insert(inserts);
+    const {error:insErr}=await supabase.from('tiles').insert(inserts);
     if(insErr) console.error(insErr);
   }
 
   async function renderMap(){
-    const {data, error}=await sb.from('tiles').select('*');
+    const {data, error}=await supabase.from('tiles').select('*');
     if(error){console.error(error);return;}
     mapEl.innerHTML='';
     data.forEach(tile=>{
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function handleTileClick(tile){
     if(tile.fog){
-      await sb.from('tiles').update({fog:false}).eq('x',tile.x).eq('y',tile.y);
+      await supabase.from('tiles').update({fog:false}).eq('x',tile.x).eq('y',tile.y);
       tile.fog=false;
       renderMap();
       return;
@@ -251,27 +251,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(!tile.resource) return;
     if(tile.building_id) return;
     if(player.budget < 100) {showError('Insufficient funds');return;}
-    const {data, error}=await sb.from('buildings').insert({player_id:user.id,type:'extraction',tier:1,resource:tile.resource,tile_x:tile.x,tile_y:tile.y});
+    const {data, error}=await supabase.from('buildings').insert({player_id:user.id,type:'extraction',tier:1,resource:tile.resource,tile_x:tile.x,tile_y:tile.y});
     if(error){showError('Build failed');return;}
     const newBudget = player.budget - 100;
-    await sb.from('players').update({budget:newBudget}).eq('id',user.id);
+    await supabase.from('players').update({budget:newBudget}).eq('id',user.id);
     player.budget = newBudget;
     budgetEl.textContent = newBudget;
     const buildingId = data[0].id;
-    await sb.from('tiles').update({building_id:buildingId}).eq('x',tile.x).eq('y',tile.y);
+    await supabase.from('tiles').update({building_id:buildingId}).eq('x',tile.x).eq('y',tile.y);
     renderMap();
   }
 
   async function gameTick(){
-    const {data: buildings, error}=await sb.from('buildings').select('*').eq('player_id',user.id);
+    const {data: buildings, error}=await supabase.from('buildings').select('*').eq('player_id',user.id);
     if(error){console.error(error);return;}
     for(const b of buildings){
-      const {data: inv} = await sb.from('inventory').select('resources').eq('player_id',user.id).single();
+      const {data: inv} = await supabase.from('inventory').select('resources').eq('player_id',user.id).single();
       let resources = inv ? inv.resources : {clay:0,timber:0,stone:0,iron:0,corn:0};
       resources[b.resource] = (resources[b.resource]||0)+1;
-      await sb.from('inventory').upsert({player_id:user.id,resources});
+      await supabase.from('inventory').upsert({player_id:user.id,resources});
       const newPop = (player.population||0) + 1;
-      await sb.from('players').update({population:newPop}).eq('id',user.id);
+      await supabase.from('players').update({population:newPop}).eq('id',user.id);
       player.population = newPop;
       popEl.textContent = newPop;
     }
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function loadInventory(){
-    const {data}=await sb.from('inventory').select('resources').eq('player_id',user.id).single();
+    const {data}=await supabase.from('inventory').select('resources').eq('player_id',user.id).single();
     const list=document.getElementById('inv-list');
     list.innerHTML='';
     const res = data ? data.resources : {clay:0,timber:0,stone:0,iron:0,corn:0};
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       btn.addEventListener('click', async()=>{
         if(player.budget<10) return showError('Not enough money for gift');
         const newBud=player.budget-10;
-        await sb.from('players').update({budget:newBud}).eq('id',user.id);
+        await supabase.from('players').update({budget:newBud}).eq('id',user.id);
         player.budget=newBud;budgetEl.textContent=newBud;
       });
       div.appendChild(btn);
@@ -325,9 +325,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('password').value;
     if(!email||!pass){ showError('Email and password required'); return; }
-    const {error} = await sb.auth.signInWithPassword({email, password: pass});
+    const {error} = await supabase.auth.signInWithPassword({email, password: pass});
     if(error){ showError(error.message); return; }
-    const {data} = await sb.auth.getSession();
+    const {data} = await supabase.auth.getSession();
     user = data.session.user;
     await loadPlayer();
     showGameUI();
@@ -339,18 +339,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('password').value;
     if(!email||!pass){ showError('Email and password required'); return; }
-    const {error} = await sb.auth.signUp({email, password: pass});
+    const {error} = await supabase.auth.signUp({email, password: pass});
     if(error){ showError(error.message); return; }
-    const {error: loginErr} = await sb.auth.signInWithPassword({email, password: pass});
+    const {error: loginErr} = await supabase.auth.signInWithPassword({email, password: pass});
     if(loginErr){ showError(loginErr.message); return; }
-    const {data} = await sb.auth.getSession();
+    const {data} = await supabase.auth.getSession();
     user = data.session.user;
     await loadPlayer();
     showGameUI();
   });
 
   logoutBtn.addEventListener('click', async () => {
-    await sb.auth.signOut();
+    await supabase.auth.signOut();
     location.reload();
   });
 
