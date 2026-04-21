@@ -331,17 +331,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   log('Auth buttons found: ' + !!loginBtn + ', ' + !!registerBtn + ', ' + !!logoutBtn);
 
   loginBtn.addEventListener('click', async () => {
-    alert('Login clicked');
+    log('1. Login btn clicked');
+    alert('Starting login...');
     clearError();
     const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('password').value;
     if(!email||!pass){ showError('Email and password required'); return; }
+    log('2. Attempting Supabase login with: ' + email);
     const {error} = await supabase.auth.signInWithPassword({email, password: pass});
+    log('3. Login response: ' + (error ? error.message : 'success'));
     if(error){ alert('Login error: ' + error.message); showError(error.message); return; }
+    log('4. Login success, getting session');
     const {data} = await supabase.auth.getSession();
+    log('5. Session: ' + (data.session ? 'got' : 'none'));
     user = data.session.user;
+    log('6. User ID: ' + user.id);
+    log('7. Calling loadPlayer...');
     await loadPlayer();
+    log('8. Player loaded: ' + JSON.stringify(player));
+    log('9. Calling showGameUI...');
     showGameUI();
+    log('10. showGameUI complete');
   });
 
   registerBtn.addEventListener('click', async () => {

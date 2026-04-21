@@ -1,6 +1,6 @@
 // AUTO-GENERATED — do not edit
 const GAME_VERSION = {
-  commit: '4c08fc6',
-  date: '2026-04-21 11:32 UTC',
-  message: 'Add visible debug log for mobile'
+  commit: '1fb3650',
+  date: '2026-04-21 11:38 UTC',
+  message: 'Add inline onclick to test button clicks'
 };
