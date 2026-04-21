@@ -49,8 +49,8 @@ button:disabled{opacity:0.5;cursor:not-allowed;}
   <div id="debug-log" style="color:#58a6ff;font-size:12px;margin-bottom:10px;min-height:20px;word-break:break-all;"></div>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
-    <button id="login-btn">Log In</button>
-    <button id="register-btn" style="margin-left:5px;">Register</button>
+    <button id="login-btn" onclick="alert('HTML onclick works!'); document.log = document.log || log; log('HTML login btn clicked');">Log In</button>
+    <button id="register-btn" style="margin-left:5px;" onclick="alert('HTML onclick works!'); document.log = document.log || log; log('HTML register btn clicked');">Register</button>
   </section>
 </div>
 
